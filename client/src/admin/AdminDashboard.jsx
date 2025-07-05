@@ -54,143 +54,178 @@ function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#2B2B2B] text-white">
+    <div className="min-h-screen" style={{ backgroundColor: '#FFFFFF' }}>
+      {/* Header */}
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <div className="mb-10">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-2">Dashboard Overview</h2>
-          <p className="text-[#B3B3B3]">
-            Welcome back! Here's what's happening with your store today.
-          </p>
+      <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        {/* Welcome Section */}
+        <div className="mb-8">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-3" style={{ color: '#2B2B2B' }}>
+              Welcome back! 👋
+            </h2>
+            <p className="text-base sm:text-lg" style={{ color: '#B3B3B3' }}>
+              Here's what's happening with your store today.
+            </p>
+          </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-10">
-          <div className="bg-[#383838] p-4 sm:p-6 rounded-lg shadow hover:shadow-lg transition-shadow">
-            <div className="flex items-center">
-              <div className="p-2 sm:p-3 rounded-full bg-yellow-500/20 mr-3 sm:mr-4">
-                <ShoppingCart className="text-yellow-400" size={20} />
-              </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1">
+            <div className="flex items-center justify-between">
               <div>
-                <p className="text-[#B3B3B3] text-sm">Total Orders</p>
-                <h3 className="text-xl sm:text-2xl font-bold">
-                  {isLoading ? '...' : orderCount}
+                <p className="text-sm font-medium" style={{ color: '#B3B3B3' }}>Total Orders</p>
+                <h3 className="text-3xl font-bold mt-2" style={{ color: '#2B2B2B' }}>
+                  {isLoading ? (
+                    <div className="animate-pulse bg-gray-200 h-8 w-16 rounded"></div>
+                  ) : (
+                    orderCount
+                  )}
                 </h3>
+              </div>
+              <div className="p-4 bg-yellow-50 rounded-xl">
+                <ShoppingCart className="text-yellow-500" size={24} />
               </div>
             </div>
           </div>
           
-          <div className="bg-[#383838] p-4 sm:p-6 rounded-lg shadow hover:shadow-lg transition-shadow">
-            <div className="flex items-center">
-              <div className="p-2 sm:p-3 rounded-full bg-green-500/20 mr-3 sm:mr-4">
-                <Package className="text-green-400" size={20} />
-              </div>
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1">
+            <div className="flex items-center justify-between">
               <div>
-                <p className="text-[#B3B3B3] text-sm">Products</p>
-                <h3 className="text-xl sm:text-2xl font-bold">
-                  {isLoading ? '...' : productCount}
+                <p className="text-sm font-medium" style={{ color: '#B3B3B3' }}>Total Products</p>
+                <h3 className="text-3xl font-bold mt-2" style={{ color: '#2B2B2B' }}>
+                  {isLoading ? (
+                    <div className="animate-pulse bg-gray-200 h-8 w-16 rounded"></div>
+                  ) : (
+                    productCount
+                  )}
                 </h3>
+              </div>
+              <div className="p-4 bg-green-50 rounded-xl">
+                <Package className="text-green-500" size={24} />
               </div>
             </div>
           </div>
           
-          <div className="bg-[#383838] p-4 sm:p-6 rounded-lg shadow hover:shadow-lg transition-shadow">
-            <div className="flex items-center">
-              <div className="p-2 sm:p-3 rounded-full bg-blue-500/20 mr-3 sm:mr-4">
-                <Users className="text-blue-400" size={20} />
-              </div>
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 sm:col-span-2 lg:col-span-1">
+            <div className="flex items-center justify-between">
               <div>
-                <p className="text-[#B3B3B3] text-sm">Total Users</p>
-                <h3 className="text-xl sm:text-2xl font-bold">
-                  {isLoading ? '...' : userCount}
+                <p className="text-sm font-medium" style={{ color: '#B3B3B3' }}>Total Users</p>
+                <h3 className="text-3xl font-bold mt-2" style={{ color: '#2B2B2B' }}>
+                  {isLoading ? (
+                    <div className="animate-pulse bg-gray-200 h-8 w-16 rounded"></div>
+                  ) : (
+                    userCount
+                  )}
                 </h3>
+              </div>
+              <div className="p-4 bg-blue-50 rounded-xl">
+                <Users className="text-blue-500" size={24} />
               </div>
             </div>
           </div>
         </div>
 
         {/* Quick Actions */}
-        <div className="mb-10">
-          <h3 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6">Quick Actions</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="mb-8">
+          <h3 className="text-xl font-bold mb-6" style={{ color: '#2B2B2B' }}>Quick Actions</h3>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <Link
               to="/admin/products"
-              className="bg-[#383838] hover:bg-[#444] transition p-4 sm:p-6 rounded-lg flex flex-col items-center text-center hover:shadow-lg"
+              className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 flex flex-col items-center text-center group"
             >
-              <Package className="text-[#D4D4D4] mb-2 sm:mb-3" size={24} />
-              <span className="font-medium text-sm sm:text-base">Manage Products</span>
+              <div className="p-4 bg-purple-50 rounded-xl mb-4 group-hover:bg-purple-100 transition-colors duration-200">
+                <Package className="text-purple-500" size={24} />
+              </div>
+              <span className="font-semibold text-sm sm:text-base" style={{ color: '#2B2B2B' }}>
+                Manage Products
+              </span>
             </Link>
             <Link
               to="/admin/add-product"
-              className="bg-[#383838] hover:bg-[#444] transition p-4 sm:p-6 rounded-lg flex flex-col items-center text-center hover:shadow-lg"
+              className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 flex flex-col items-center text-center group"
             >
-              <PlusCircle className="text-[#D4D4D4] mb-2 sm:mb-3" size={24} />
-              <span className="font-medium text-sm sm:text-base">Add Product</span>
+              <div className="p-4 bg-green-50 rounded-xl mb-4 group-hover:bg-green-100 transition-colors duration-200">
+                <PlusCircle className="text-green-500" size={24} />
+              </div>
+              <span className="font-semibold text-sm sm:text-base" style={{ color: '#2B2B2B' }}>
+                Add Product
+              </span>
             </Link>
             <Link
               to="/admin/orders"
-              className="bg-[#383838] hover:bg-[#444] transition p-4 sm:p-6 rounded-lg flex flex-col items-center text-center hover:shadow-lg"
+              className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 flex flex-col items-center text-center group"
             >
-              <ShoppingCart className="text-[#D4D4D4] mb-2 sm:mb-3" size={24} />
-              <span className="font-medium text-sm sm:text-base">View Orders</span>
+              <div className="p-4 bg-orange-50 rounded-xl mb-4 group-hover:bg-orange-100 transition-colors duration-200">
+                <ShoppingCart className="text-orange-500" size={24} />
+              </div>
+              <span className="font-semibold text-sm sm:text-base" style={{ color: '#2B2B2B' }}>
+                View Orders
+              </span>
             </Link>
             <Link
               to="/admin/users"
-              className="bg-[#383838] hover:bg-[#444] transition p-4 sm:p-6 rounded-lg flex flex-col items-center text-center hover:shadow-lg"
+              className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 flex flex-col items-center text-center group"
             >
-              <Users className="text-[#D4D4D4] mb-2 sm:mb-3" size={24} />
-              <span className="font-medium text-sm sm:text-base">Manage Users</span>
+              <div className="p-4 bg-blue-50 rounded-xl mb-4 group-hover:bg-blue-100 transition-colors duration-200">
+                <Users className="text-blue-500" size={24} />
+              </div>
+              <span className="font-semibold text-sm sm:text-base" style={{ color: '#2B2B2B' }}>
+                Manage Users
+              </span>
             </Link>
           </div>
         </div>
 
         {/* Recent Activity */}
-        <div className="bg-[#383838] rounded-lg shadow p-4 sm:p-6">
-          <div className="flex justify-between items-center mb-4 sm:mb-6">
-            <h3 className="text-lg sm:text-xl font-semibold">Recent Activity</h3>
-            <button 
-              onClick={handleSettings}
-              className="text-[#D4D4D4] hover:text-white flex items-center text-sm"
-            >
-              <Settings size={16} className="mr-1" /> Settings
-            </button>
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-xl font-bold" style={{ color: '#2B2B2B' }}>Recent Activity</h3>
+            <span className="text-sm px-3 py-1 bg-gray-50 rounded-full" style={{ color: '#B3B3B3' }}>
+              Live updates
+            </span>
           </div>
-          <div className="space-y-3 sm:space-y-4">
-            <div className="flex items-start pb-3 sm:pb-4 border-b border-[#444]">
-              <div className="p-1 sm:p-2 rounded-full bg-blue-500/20 mr-3 sm:mr-4">
-                <Users size={16} className="text-blue-400" />
+          <div className="space-y-4">
+            <div className="flex items-start p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
+              <div className="p-2 bg-blue-100 rounded-lg mr-4 flex-shrink-0">
+                <Users size={16} className="text-blue-600" />
               </div>
-              <div>
-                <p className="font-medium text-sm sm:text-base">New user registered</p>
-                <p className="text-xs sm:text-sm text-[#B3B3B3]">John Doe - 2 hours ago</p>
-              </div>
-            </div>
-            <div className="flex items-start pb-3 sm:pb-4 border-b border-[#444]">
-              <div className="p-1 sm:p-2 rounded-full bg-green-500/20 mr-3 sm:mr-4">
-                <ShoppingCart size={16} className="text-green-400" />
-              </div>
-              <div>
-                <p className="font-medium text-sm sm:text-base">New order received</p>
-                <p className="text-xs sm:text-sm text-[#B3B3B3]">Order #12345 - 5 hours ago</p>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-sm sm:text-base" style={{ color: '#2B2B2B' }}>
+                  New user registered
+                </p>
+                <p className="text-xs sm:text-sm mt-1" style={{ color: '#B3B3B3' }}>
+                  John Doe - 2 hours ago
+                </p>
               </div>
             </div>
-            <div className="flex items-start">
-              <div className="p-1 sm:p-2 rounded-full bg-yellow-500/20 mr-3 sm:mr-4">
-                <Package size={16} className="text-yellow-400" />
+            <div className="flex items-start p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
+              <div className="p-2 bg-green-100 rounded-lg mr-4 flex-shrink-0">
+                <ShoppingCart size={16} className="text-green-600" />
               </div>
-              <div>
-                <p className="font-medium text-sm sm:text-base">Product updated</p>
-                <p className="text-xs sm:text-sm text-[#B3B3B3]">"Summer T-Shirt" - Yesterday</p>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-sm sm:text-base" style={{ color: '#2B2B2B' }}>
+                  New order received
+                </p>
+                <p className="text-xs sm:text-sm mt-1" style={{ color: '#B3B3B3' }}>
+                  Order #12345 - 5 hours ago
+                </p>
               </div>
             </div>
-          </div>
-          <div className="mt-6 flex justify-end">
-            <button 
-              onClick={handleLogout}
-              className="flex items-center text-[#D4D4D4] hover:text-white text-sm"
-            >
-              <LogOut size={16} className="mr-1" /> Logout
-            </button>
+            <div className="flex items-start p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
+              <div className="p-2 bg-yellow-100 rounded-lg mr-4 flex-shrink-0">
+                <Package size={16} className="text-yellow-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-sm sm:text-base" style={{ color: '#2B2B2B' }}>
+                  Product updated
+                </p>
+                <p className="text-xs sm:text-sm mt-1" style={{ color: '#B3B3B3' }}>
+                  "Summer T-Shirt" - Yesterday
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </main>

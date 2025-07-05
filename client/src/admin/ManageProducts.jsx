@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 
 function ManageProducts() {
   const [products, setProducts] = useState([]);
@@ -6,6 +6,17 @@ function ManageProducts() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [isLoading, setIsLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
+  const [notification, setNotification] = useState({ show: false, message: "", type: "" });
+
+  // Show notification popup
+  const showNotification = (message, type = 'success') => {
+    setNotification({ show: true, message, type });
+    setTimeout(() => {
+      setNotification({ ...notification, show: false });
+    }, 3000);
+  };
 
   useEffect(() => {
     fetchProducts();
@@ -23,6 +34,7 @@ function ManageProducts() {
       .catch((err) => {
         console.error("Failed to fetch products:", err);
         setIsLoading(false);
+        showNotification('Failed to load products', 'error');
       });
   };
 
@@ -49,6 +61,8 @@ function ManageProducts() {
     if (!confirmed) return;
 
     try {
+      setIsDeleting(true);
+      setDeleteId(productId);
       const token = localStorage.getItem("token");
 
       const res = await fetch(`http://localhost:8080/admin/product/${productId}`, {
@@ -64,11 +78,14 @@ function ManageProducts() {
         throw new Error(data.message || "Failed to delete product");
       }
 
-      alert("✅ Product deleted successfully");
+      showNotification('Product deleted successfully');
       fetchProducts();
     } catch (err) {
-      alert("❌ " + err.message);
       console.error(err);
+      showNotification(err.message || 'Failed to delete product', 'error');
+    } finally {
+      setIsDeleting(false);
+      setDeleteId(null);
     }
   };
 
@@ -80,6 +97,7 @@ function ManageProducts() {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
           },
           body: JSON.stringify({ stock: !currentStock }),
         }
@@ -93,49 +111,94 @@ function ManageProducts() {
         setFilteredData((prev) =>
           prev.map((p) => (p._id === id ? { ...p, stock: updated.stock } : p))
         );
+        showNotification(`Stock status updated to ${updated.stock ? 'In Stock' : 'Out of Stock'}`);
       }
     } catch (error) {
       console.error("Error toggling stock status:", error);
+      showNotification('Failed to update stock status', 'error');
     }
   };
 
   const categories = ["all", ...new Set(products.flatMap((p) => p.category))];
 
   return (
-    <div className="min-h-screen bg-[#2B2B2B] p-4 md:p-8">
+    <div className="min-h-screen bg-[#2B2B2B] p-4 md:p-8 relative">
+      {/* Notification Popup */}
+      {notification.show && (
+        <div className={`fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg flex items-center ${
+          notification.type === 'error' 
+            ? 'bg-red-100 border-l-4 border-red-500 text-red-700' 
+            : 'bg-green-100 border-l-4 border-green-500 text-green-700'
+        }`}>
+          <svg 
+            className={`h-6 w-6 mr-2 ${notification.type === 'error' ? 'text-red-500' : 'text-green-500'}`} 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24" 
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              strokeWidth={2} 
+              d={notification.type === 'error' ? 
+                "M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" : 
+                "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              } 
+            />
+          </svg>
+          <span>{notification.message}</span>
+          <button 
+            onClick={() => setNotification({ ...notification, show: false })}
+            className="ml-4 text-gray-500 hover:text-gray-700"
+          >
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-          <h1 className="text-2xl md:text-3xl font-bold text-[#FFFFFF]">Manage Products</h1>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-[#FFFFFF] mb-1">Manage Products</h1>
+            <p className="text-[#B3B3B3] text-sm">
+              {products.length} {products.length === 1 ? 'product' : 'products'} in inventory
+            </p>
+          </div>
 
           {/* Search and Filter */}
           <div className="w-full md:w-auto flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-grow">
+            <div className="relative flex-grow min-w-[200px]">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg
+                  className="h-5 w-5 text-[#B3B3B3]"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </div>
               <input
                 type="text"
                 placeholder="Search products..."
-                className="w-full px-4 py-2 bg-[#2B2B2B] border border-[#D4D4D4] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#FFFFFF] text-[#FFFFFF] placeholder-[#B3B3B3]"
+                className="w-full pl-10 pr-4 py-2 bg-[#2B2B2B] border border-[#D4D4D4] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#B3B3B3] text-[#FFFFFF] placeholder-[#B3B3B3]"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
-              <svg
-                className="absolute right-3 top-2.5 h-5 w-5 text-[#B3B3B3]"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
             </div>
 
             <select
-              className="px-4 py-2 bg-[#2B2B2B] border border-[#D4D4D4] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#FFFFFF] text-[#FFFFFF]"
+              className="px-4 py-2 bg-[#2B2B2B] border border-[#D4D4D4] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#B3B3B3] text-[#FFFFFF]"
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
             >
@@ -145,7 +208,7 @@ function ManageProducts() {
                   value={category}
                   className="bg-[#2B2B2B]"
                 >
-                  {category.charAt(0).toUpperCase() + category.slice(1)}
+                  {category === "all" ? "All Categories" : category.charAt(0).toUpperCase() + category.slice(1)}
                 </option>
               ))}
             </select>
@@ -159,8 +222,25 @@ function ManageProducts() {
           </div>
         ) : filteredData.length === 0 ? (
           <div className="text-center py-12 bg-[#2B2B2B] rounded-lg border border-[#D4D4D4]">
-            <p className="text-[#B3B3B3] text-lg">
-              No products found matching your criteria
+            <svg
+              className="mx-auto h-12 w-12 text-[#B3B3B3]"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <h3 className="mt-2 text-lg font-medium text-[#FFFFFF]">No products found</h3>
+            <p className="mt-1 text-[#B3B3B3]">
+              {searchTerm || selectedCategory !== "all"
+                ? "Try adjusting your search or filter"
+                : "No products available in inventory"}
             </p>
           </div>
         ) : (
@@ -168,55 +248,59 @@ function ManageProducts() {
             {filteredData.map((product) => (
               <div
                 key={product._id}
-                className="bg-[#FFFFFF] rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow duration-300"
+                className="bg-[#FFFFFF] rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 border border-[#D4D4D4]"
               >
-                <div className="relative w-full h-48 sm:h-56 bg-[#D4D4D4] flex items-center justify-center">
+                {/* Product Image */}
+                <div className="relative w-full h-48 sm:h-56 bg-[#F5F5F5] flex items-center justify-center group">
                   <img
-                    src={product.imageUrl}
+                    src={product.imageUrl || "https://via.placeholder.com/300x300?text=No+Image"}
                     alt={product.title}
-                    className="max-h-full max-w-full object-contain p-4"
+                    className="max-h-full max-w-full object-contain p-4 transition-transform duration-300 group-hover:scale-105"
                     onError={(e) => {
                       e.target.src = "https://via.placeholder.com/300x300?text=No+Image";
                     }}
                   />
                   <div
-                    className={`absolute top-2 right-2 px-2 py-1 rounded-full text-xs font-bold ${
+                    className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-bold ${
                       product.stock
-                        ? "bg-[#2B2B2B] text-[#FFFFFF]"
-                        : "bg-[#B3B3B3] text-[#2B2B2B]"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
                     }`}
                   >
                     {product.stock ? "IN STOCK" : "OUT OF STOCK"}
                   </div>
                 </div>
 
+                {/* Product Info */}
                 <div className="p-4">
                   <div className="flex justify-between items-start mb-2">
-                    <h2 className="text-lg font-semibold text-[#2B2B2B] line-clamp-1">
+                    <h2 className="text-lg font-bold text-[#2B2B2B] line-clamp-2 h-14">
                       {product.title}
                     </h2>
-                    <span className="text-[#2B2B2B] font-bold">₹{product.price}</span>
+                    <span className="text-lg font-bold text-[#2B2B2B] whitespace-nowrap ml-2">
+                      ₹{product.price.toFixed(2)}
+                    </span>
                   </div>
 
-                  <div className="flex flex-wrap gap-1 mb-3">
+                  <div className="flex flex-wrap gap-1.5 mb-3">
                     {product.category.map((cat) => (
                       <span
                         key={cat}
-                        className="px-2 py-1 bg-[#D4D4D4] text-[#2B2B2B] text-xs rounded-full"
+                        className="px-2.5 py-1 bg-[#D4D4D4] text-[#2B2B2B] text-xs rounded-full font-medium"
                       >
                         {cat}
                       </span>
                     ))}
                   </div>
 
-                  <p className="text-[#B3B3B3] text-sm mb-4 line-clamp-2">
+                  <p className="text-[#666666] text-sm mb-4 line-clamp-2 h-10">
                     {product.description}
                   </p>
 
                   {/* Controls */}
                   <div className="flex justify-between items-center border-t border-[#D4D4D4] pt-3">
-                    <span className="text-xs text-[#B3B3B3]">
-                      ID: {product._id.slice(-6)}
+                    <span className="text-xs text-[#B3B3B3] font-mono">
+                      ID: {product._id.slice(-6).toUpperCase()}
                     </span>
                     <div className="flex items-center gap-2">
                       <label className="inline-flex items-center cursor-pointer">
@@ -229,14 +313,30 @@ function ManageProducts() {
                               toggleStockStatus(product._id, product.stock)
                             }
                           />
-                          <div className="w-11 h-6 bg-[#B3B3B3] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-[#FFFFFF] after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-[#FFFFFF] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#2B2B2B]"></div>
+                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#2B2B2B]"></div>
                         </div>
                       </label>
                       <button
                         onClick={() => handleDelete(product._id)}
-                        className="text-xs bg-[#2B2B2B] hover:bg-[#B3B3B3] text-[#FFFFFF] px-3 py-1 rounded transition-colors"
+                        disabled={isDeleting && deleteId === product._id}
+                        className="text-xs bg-[#2B2B2B] hover:bg-[#B3B3B3] text-[#FFFFFF] px-3 py-1.5 rounded-lg transition-colors duration-200 flex items-center gap-1 disabled:opacity-50"
                       >
-                        Delete
+                        {isDeleting && deleteId === product._id ? (
+                          <>
+                            <svg className="animate-spin h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Deleting...
+                          </>
+                        ) : (
+                          <>
+                            <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            Delete
+                          </>
+                        )}
                       </button>
                     </div>
                   </div>

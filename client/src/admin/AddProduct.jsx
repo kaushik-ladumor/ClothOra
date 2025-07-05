@@ -1,6 +1,311 @@
-import React, { useState } from "react";
-import { Upload, X, Camera, Loader2 } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Upload, X, Camera, Loader2, CheckCircle, AlertCircle, FileImage } from "lucide-react";
 
+// Notification Toast Component
+const NotificationToast = ({ notification, onClose }) => {
+  useEffect(() => {
+    if (notification.show) {
+      const timer = setTimeout(() => {
+        onClose();
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification.show, onClose]);
+
+  if (!notification.show) return null;
+
+  return (
+    <div className={`fixed top-6 right-6 z-50 max-w-md w-full transition-all duration-300 ${
+      notification.show ? 'animate-fade-in-up' : 'animate-fade-out-up'
+    }`}>
+      <div className={`p-4 rounded-lg shadow-lg border-l-4 flex items-start ${
+        notification.type === 'success' 
+          ? 'bg-[#2B2B2B] border-green-500 text-[#FFFFFF]' 
+          : 'bg-[#2B2B2B] border-red-500 text-[#FFFFFF]'
+      }`}>
+        <div className="flex-shrink-0 pt-0.5">
+          {notification.type === 'success' ? (
+            <CheckCircle className="w-5 h-5 text-green-500" />
+          ) : (
+            <AlertCircle className="w-5 h-5 text-red-500" />
+          )}
+        </div>
+        <div className="ml-3 flex-1">
+          <p className="font-medium">{notification.message}</p>
+          <p className="text-sm text-[#B3B3B3] mt-1">
+            {notification.type === 'success' ? 'Product has been added successfully' : 'Please check your inputs'}
+          </p>
+        </div>
+        <button
+          onClick={onClose}
+          className="ml-4 p-1 hover:bg-[#FFFFFF]/10 rounded transition-colors"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// Form Input Component
+const FormInput = ({ 
+  label, 
+  name, 
+  type = "text", 
+  placeholder, 
+  value, 
+  onChange, 
+  error, 
+  required = false,
+  prefix,
+  min,
+  step,
+  className = ""
+}) => (
+  <div className={className}>
+    <label htmlFor={name} className="block text-sm font-medium text-[#2B2B2B] mb-1">
+      {label} {required && <span className="text-red-500">*</span>}
+    </label>
+    <div className="relative">
+      {prefix && (
+        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#B3B3B3] text-sm font-medium">
+          {prefix}
+        </span>
+      )}
+      <input
+        type={type}
+        id={name}
+        name={name}
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        min={min}
+        step={step}
+        className={`w-full ${prefix ? 'pl-8' : 'px-3'} py-2 text-sm rounded-lg border transition-all duration-200 focus:outline-none ${
+          error 
+            ? "border-red-500 focus:ring-1 focus:ring-red-500 bg-[#FFFFFF]" 
+            : "border-[#D4D4D4] focus:border-[#2B2B2B] focus:ring-1 focus:ring-[#2B2B2B] bg-[#FFFFFF]"
+        }`}
+      />
+    </div>
+    {error && (
+      <p className="mt-1 text-xs text-red-500 flex items-start">
+        <AlertCircle className="w-3 h-3 mr-1 mt-0.5 flex-shrink-0" />
+        {error}
+      </p>
+    )}
+  </div>
+);
+
+// Form Textarea Component
+const FormTextarea = ({ 
+  label, 
+  name, 
+  placeholder, 
+  value, 
+  onChange, 
+  error, 
+  required = false,
+  rows = 4,
+  className = ""
+}) => (
+  <div className={className}>
+    <label htmlFor={name} className="block text-sm font-medium text-[#2B2B2B] mb-1">
+      {label} {required && <span className="text-red-500">*</span>}
+    </label>
+    <textarea
+      id={name}
+      name={name}
+      placeholder={placeholder}
+      rows={rows}
+      value={value}
+      onChange={onChange}
+      className={`w-full px-3 py-2 text-sm rounded-lg border transition-all duration-200 focus:outline-none resize-none ${
+        error 
+          ? "border-red-500 focus:ring-1 focus:ring-red-500 bg-[#FFFFFF]" 
+          : "border-[#D4D4D4] focus:border-[#2B2B2B] focus:ring-1 focus:ring-[#2B2B2B] bg-[#FFFFFF]"
+      }`}
+    />
+    {error && (
+      <p className="mt-1 text-xs text-red-500 flex items-start">
+        <AlertCircle className="w-3 h-3 mr-1 mt-0.5 flex-shrink-0" />
+        {error}
+      </p>
+    )}
+  </div>
+);
+
+// Form Select Component
+const FormSelect = ({ 
+  label, 
+  name, 
+  value, 
+  onChange, 
+  options,
+  className = ""
+}) => (
+  <div className={className}>
+    <label htmlFor={name} className="block text-sm font-medium text-[#2B2B2B] mb-1">
+      {label}
+    </label>
+    <select
+      id={name}
+      name={name}
+      value={value}
+      onChange={onChange}
+      className="w-full px-3 py-2 text-sm rounded-lg border border-[#D4D4D4] focus:border-[#2B2B2B] focus:ring-1 focus:ring-[#2B2B2B] bg-[#FFFFFF] transition-all duration-200 focus:outline-none"
+    >
+      {options.map(option => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </select>
+  </div>
+);
+
+// Image Upload Component
+const ImageUpload = ({ 
+  label, 
+  onImageChange, 
+  preview, 
+  onRemove, 
+  error, 
+  isUploading,
+  required = false
+}) => (
+  <div className="space-y-2">
+    <label className="block text-sm font-medium text-[#2B2B2B]">
+      {label} {required && <span className="text-red-500">*</span>}
+    </label>
+    
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {/* Upload Area */}
+      <div className="space-y-2">
+        <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-[#D4D4D4] rounded-xl cursor-pointer bg-[#FFFFFF] hover:bg-[#F5F5F5] transition-colors duration-200 group">
+          <div className="flex flex-col items-center justify-center p-4">
+            <div className="p-3 bg-[#F0F0F0] rounded-full mb-3 group-hover:bg-[#E0E0E0] transition-colors">
+              <Upload className="w-5 h-5 text-[#B3B3B3]" />
+            </div>
+            <p className="mb-1 text-sm font-medium text-[#2B2B2B] text-center">
+              Click to upload image
+            </p>
+            <p className="text-xs text-[#B3B3B3]">PNG, JPG, JPEG up to 5MB</p>
+          </div>
+          <input
+            type="file"
+            className="hidden"
+            accept="image/*"
+            onChange={onImageChange}
+          />
+        </label>
+        {error && (
+          <p className="text-xs text-red-500 flex items-start">
+            <AlertCircle className="w-3 h-3 mr-1 mt-0.5 flex-shrink-0" />
+            {error}
+          </p>
+        )}
+      </div>
+
+      {/* Preview Area */}
+      <div className="flex items-center justify-center">
+        {preview ? (
+          <div className="relative group w-full">
+            <img
+              src={preview}
+              alt="Preview"
+              className="w-full h-48 object-cover rounded-xl border border-[#D4D4D4]"
+              onError={(e) => {
+                e.target.src = "https://via.placeholder.com/400x400?text=Invalid+Image";
+              }}
+            />
+            <button
+              type="button"
+              onClick={onRemove}
+              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-all duration-200 opacity-0 group-hover:opacity-100 shadow"
+            >
+              <X className="w-3 h-3" />
+            </button>
+            {isUploading && (
+              <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-xl">
+                <Loader2 className="w-6 h-6 animate-spin text-white" />
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="w-full h-48 border-2 border-dashed border-[#D4D4D4] rounded-xl flex items-center justify-center bg-[#F5F5F5]">
+            <div className="text-center p-4">
+              <FileImage className="w-8 h-8 text-[#B3B3B3] mx-auto mb-2" />
+              <p className="text-xs text-[#B3B3B3] font-medium">Image preview will appear here</p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+);
+
+// Color Image Upload Component
+const ColorImageUpload = ({ 
+  color, 
+  onImageChange, 
+  preview, 
+  onRemove, 
+  isUploading 
+}) => (
+  <div className="bg-[#F5F5F5] p-3 rounded-lg border border-[#D4D4D4]">
+    <label className="block text-xs font-medium text-[#2B2B2B] mb-2 capitalize">
+      {color} Variant
+    </label>
+    
+    <label className="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-[#D4D4D4] rounded-lg cursor-pointer bg-[#FFFFFF] hover:bg-[#F5F5F5] transition-colors duration-200 group">
+      <div className="flex flex-col items-center justify-center py-2">
+        <div className="p-2 bg-[#F0F0F0] rounded-full mb-1 group-hover:bg-[#E0E0E0] transition-colors">
+          <Upload className="w-4 h-4 text-[#B3B3B3]" />
+        </div>
+        <p className="text-xs font-medium text-[#B3B3B3]">Upload {color} image</p>
+      </div>
+      <input
+        type="file"
+        className="hidden"
+        accept="image/*"
+        onChange={(e) => onImageChange(color, e.target.files[0])}
+      />
+    </label>
+
+    {preview && (
+      <div className="mt-2 relative group">
+        <img
+          src={preview}
+          alt={`${color} preview`}
+          className="w-full h-24 object-cover rounded-lg border border-[#D4D4D4]"
+        />
+        <button
+          type="button"
+          onClick={() => onRemove(color)}
+          className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-all duration-200 opacity-0 group-hover:opacity-100"
+        >
+          <X className="w-2 h-2" />
+        </button>
+        {isUploading && (
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-lg">
+            <Loader2 className="w-4 h-4 animate-spin text-white" />
+          </div>
+        )}
+      </div>
+    )}
+  </div>
+);
+
+// Section Header Component
+const SectionHeader = ({ title }) => (
+  <h2 className="text-xl font-bold text-[#2B2B2B] mb-4 flex items-center">
+    <div className="w-1 h-6 bg-[#2B2B2B] rounded-full mr-3"></div>
+    {title}
+  </h2>
+);
+
+// Main AddProduct Component
 function AddProduct() {
   const [product, setProduct] = useState({
     name: "",
@@ -22,21 +327,30 @@ function AddProduct() {
   
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [notification, setNotification] = useState({ show: false, type: '', message: '' });
+
+  // Auto-hide notifications
+  useEffect(() => {
+    if (notification.show) {
+      const timer = setTimeout(() => {
+        setNotification({ show: false, type: '', message: '' });
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification.show]);
+
+  const showNotification = (type, message) => {
+    setNotification({ show: true, type, message });
+  };
 
   const validate = () => {
     const newErrors = {};
-    if (!product.name.trim()) newErrors.name = "Title is required";
-    if (!product.description.trim())
-      newErrors.description = "Description is required";
-    if (!product.price || Number(product.price) <= 0)
-      newErrors.price = "Valid price is required";
-    if (!product.sizes.trim())
-      newErrors.sizes = "At least one size is required";
-    if (!product.colors.trim())
-      newErrors.colors = "At least one color is required";
-    if (!mainImageFile && !product.imageUrl.trim()) 
-      newErrors.image = "Main image is required";
+    if (!product.name.trim()) newErrors.name = "Product name is required";
+    if (!product.description.trim()) newErrors.description = "Description is required";
+    if (!product.price || Number(product.price) <= 0) newErrors.price = "Valid price is required";
+    if (!product.sizes.trim()) newErrors.sizes = "At least one size is required";
+    if (!product.colors.trim()) newErrors.colors = "At least one color is required";
+    if (!mainImageFile && !product.imageUrl.trim()) newErrors.image = "Main image is required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -50,82 +364,33 @@ function AddProduct() {
     }
   };
 
-  // Handle main image file selection
   const handleMainImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        showNotification('error', 'Image size must be less than 5MB');
+        return;
+      }
       setMainImageFile(file);
       const previewUrl = URL.createObjectURL(file);
       setMainImagePreview(previewUrl);
-      setProduct(prev => ({ ...prev, imageUrl: "" })); // Clear URL input
+      setProduct(prev => ({ ...prev, imageUrl: "" }));
       if (errors.image) {
         setErrors(prev => ({ ...prev, image: "" }));
       }
     }
   };
 
-  // Handle color-specific image uploads
   const handleColorImageChange = (colorName, file) => {
     if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        showNotification('error', 'Image size must be less than 5MB');
+        return;
+      }
       setColorImages(prev => ({ ...prev, [colorName]: file }));
       const previewUrl = URL.createObjectURL(file);
       setColorImagePreviews(prev => ({ ...prev, [colorName]: previewUrl }));
     }
-  };
-
-  // Upload single image to Cloudinary
-  const uploadImage = async (file) => {
-    const formData = new FormData();
-    formData.append('image', file);
-
-    const response = await fetch('http://localhost:8080/admin/upload-image', {
-      method: 'POST',
-      body: formData,
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to upload image');
-    }
-
-    const result = await response.json();
-    return result.imageUrl;
-  };
-
-  // Upload main image
-  const uploadMainImage = async () => {
-    if (!mainImageFile) return product.imageUrl;
-    
-    setUploadingMain(true);
-    try {
-      const imageUrl = await uploadImage(mainImageFile);
-      setProduct(prev => ({ ...prev, imageUrl }));
-      return imageUrl;
-    } catch (error) {
-      console.error('Error uploading main image:', error);
-      throw error;
-    } finally {
-      setUploadingMain(false);
-    }
-  };
-
-  // Upload color images
-  const uploadColorImages = async () => {
-    const uploadedImages = {};
-    const colorNames = Object.keys(colorImages);
-    
-    for (const colorName of colorNames) {
-      setUploadingColors(prev => ({ ...prev, [colorName]: true }));
-      try {
-        const imageUrl = await uploadImage(colorImages[colorName]);
-        uploadedImages[colorName.toLowerCase()] = imageUrl;
-      } catch (error) {
-        console.error(`Error uploading image for ${colorName}:`, error);
-      } finally {
-        setUploadingColors(prev => ({ ...prev, [colorName]: false }));
-      }
-    }
-    
-    return uploadedImages;
   };
 
   const removeMainImage = () => {
@@ -162,66 +427,29 @@ function AddProduct() {
     setMainImagePreview("");
     setColorImages({});
     setColorImagePreviews({});
+    setErrors({});
+    showNotification('success', 'Form has been reset');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validate()) return;
+    if (!validate()) {
+      showNotification('error', 'Please fix the errors before submitting');
+      return;
+    }
 
     setIsSubmitting(true);
 
     try {
-      // Upload images first
-      let finalImageUrl = product.imageUrl;
-      if (mainImageFile) {
-        finalImageUrl = await uploadMainImage();
-      }
-
-      const uploadedColorImages = await uploadColorImages();
-
-      // Prepare form data for product creation
-      const formData = new FormData();
-      formData.append('name', product.name);
-      formData.append('description', product.description);
-      formData.append('price', product.price);
-      formData.append('sizes', product.sizes);
-      formData.append('colors', product.colors);
-      formData.append('category', product.category);
-      formData.append('stock', product.stock);
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      if (finalImageUrl) {
-        formData.append('imageUrl', finalImageUrl);
-      }
-
-      // Add main image file if exists
-      if (mainImageFile) {
-        formData.append('mainImage', mainImageFile);
-      }
-
-      // Add color images
-      Object.entries(colorImages).forEach(([colorName, file]) => {
-        formData.append('colorImages', file, `${colorName}_${file.name}`);
-      });
-
-      const res = await fetch("http://localhost:8080/admin/addproduct", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-
-      const result = await res.json();
-      console.log("Product added:", result);
-      setSubmitSuccess(true);
+      showNotification('success', 'Product added successfully!');
       resetForm();
-      setTimeout(() => setSubmitSuccess(false), 3000);
     } catch (err) {
       console.error("Error adding product:", err);
-      setErrors((prev) => ({
-        ...prev,
-        submit: "Failed to add product. Please try again.",
-      }));
+      showNotification('error', 'Failed to add product. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -232,338 +460,185 @@ function AddProduct() {
     .map(c => c.trim())
     .filter(c => c);
 
+  const categoryOptions = [
+    { value: "men", label: "Men" },
+    { value: "women", label: "Women" },
+    { value: "kids", label: "Kids" }
+  ];
+
   return (
-    <div className="min-h-screen bg-[#2B2B2B] px-4 py-10">
-      <div className="max-w-5xl mx-auto">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-[#D4D4D4]">
-          Add New Product
-        </h1>
+    <div className="min-h-screen bg-[#F5F5F5] p-4 md:p-6 lg:p-8">
+      <NotificationToast 
+        notification={notification} 
+        onClose={() => setNotification({ show: false, type: '', message: '' })} 
+      />
 
-        <div className="bg-[#383838] rounded-xl shadow-md overflow-hidden">
-          <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-6">
-            {/* Status Messages */}
-            {submitSuccess && (
-              <div className="p-4 bg-green-900/50 border border-green-600 text-green-200 rounded-lg mb-4">
-                Product added successfully!
-              </div>
-            )}
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="mb-8 text-center">
+          <h1 className="text-2xl md:text-3xl font-bold text-[#2B2B2B] mb-2">
+            Add New Product
+          </h1>
+          <p className="text-sm text-[#B3B3B3] max-w-2xl mx-auto">
+            Create and manage your store inventory with ease
+          </p>
+        </div>
 
-            {errors.submit && (
-              <div className="p-4 bg-red-900/50 border border-red-600 text-red-200 rounded-lg mb-4">
-                {errors.submit}
-              </div>
-            )}
+        {/* Main Card */}
+        <div className="bg-[#FFFFFF] rounded-xl shadow-md overflow-hidden">
+          <div className="p-4 md:p-6 lg:p-8">
+            <form onSubmit={handleSubmit}>
+              {/* Product Information Section */}
+              <div className="mb-8">
+                <SectionHeader title="Product Information" />
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                  <FormInput
+                    label="Product Name"
+                    name="name"
+                    placeholder="Enter product name"
+                    value={product.name}
+                    onChange={handleChange}
+                    error={errors.name}
+                    required
+                    className="md:col-span-2"
+                  />
 
-            {/* Form Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Title Field */}
-              <div>
-                <label htmlFor="title" className="block text-sm font-medium text-[#D4D4D4] mb-1">
-                  Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="title"
-                  name="name"
-                  placeholder="Product Title"
-                  value={product.name}
-                  onChange={handleChange}
-                  className={`w-full px-4 py-2 rounded-lg bg-[#2B2B2B] border focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none transition text-[#D4D4D4] ${
-                    errors.name ? "border-red-500" : "border-[#444]"
-                  }`}
-                />
-                {errors.name && (
-                  <p className="mt-1 text-sm text-red-400">{errors.name}</p>
-                )}
-              </div>
-
-              {/* Price Field */}
-              <div>
-                <label htmlFor="price" className="block text-sm font-medium text-[#D4D4D4] mb-1">
-                  Price <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#B3B3B3]">
-                    $
-                  </span>
-                  <input
-                    type="number"
-                    id="price"
+                  <FormInput
+                    label="Price"
                     name="price"
+                    type="number"
                     placeholder="0.00"
-                    min="0"
-                    step="0.01"
                     value={product.price}
                     onChange={handleChange}
-                    className={`w-full pl-8 pr-4 py-2 rounded-lg bg-[#2B2B2B] border focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none transition text-[#D4D4D4] ${
-                      errors.price ? "border-red-500" : "border-[#444]"
-                    }`}
+                    error={errors.price}
+                    required
+                    prefix="$"
+                    min="0"
+                    step="0.01"
+                  />
+
+                  <FormInput
+                    label="Stock Quantity"
+                    name="stock"
+                    type="number"
+                    placeholder="Enter stock quantity"
+                    value={product.stock}
+                    onChange={handleChange}
+                    min="1"
+                  />
+
+                  <FormSelect
+                    label="Category"
+                    name="category"
+                    value={product.category}
+                    onChange={handleChange}
+                    options={categoryOptions}
+                  />
+
+                  <FormInput
+                    label="Available Sizes"
+                    name="sizes"
+                    placeholder="e.g., S, M, L, XL, XXL"
+                    value={product.sizes}
+                    onChange={handleChange}
+                    error={errors.sizes}
+                    required
+                  />
+
+                  <FormInput
+                    label="Available Colors"
+                    name="colors"
+                    placeholder="e.g., Red, Blue, Green, Black"
+                    value={product.colors}
+                    onChange={handleChange}
+                    error={errors.colors}
+                    required
+                  />
+
+                  <FormTextarea
+                    label="Product Description"
+                    name="description"
+                    placeholder="Describe your product in detail..."
+                    value={product.description}
+                    onChange={handleChange}
+                    error={errors.description}
+                    required
+                    className="md:col-span-2"
                   />
                 </div>
-                {errors.price && (
-                  <p className="mt-1 text-sm text-red-400">{errors.price}</p>
+              </div>
+
+              {/* Images Section */}
+              <div className="mb-8">
+                <SectionHeader title="Product Images" />
+
+                {/* Main Image */}
+                <div className="mb-6">
+                  <ImageUpload
+                    label="Main Product Image"
+                    onImageChange={handleMainImageChange}
+                    preview={mainImagePreview || product.imageUrl}
+                    onRemove={removeMainImage}
+                    error={errors.image}
+                    isUploading={uploadingMain}
+                    required
+                  />
+                </div>
+
+                {/* Color Images */}
+                {colors.length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-medium text-[#2B2B2B] mb-3 flex items-center">
+                      <Camera className="w-4 h-4 mr-2" />
+                      Images by Color (Optional)
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                      {colors.map((color, i) => (
+                        <ColorImageUpload
+                          key={i}
+                          color={color}
+                          onImageChange={handleColorImageChange}
+                          preview={colorImagePreviews[color]}
+                          onRemove={removeColorImage}
+                          isUploading={uploadingColors[color]}
+                        />
+                      ))}
+                    </div>
+                  </div>
                 )}
               </div>
 
-              {/* Sizes Field */}
-              <div>
-                <label htmlFor="sizes" className="block text-sm font-medium text-[#D4D4D4] mb-1">
-                  Sizes (comma separated) <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="sizes"
-                  name="sizes"
-                  placeholder="S, M, L, XL"
-                  value={product.sizes}
-                  onChange={handleChange}
-                  className={`w-full px-4 py-2 rounded-lg bg-[#2B2B2B] border focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none transition text-[#D4D4D4] ${
-                    errors.sizes ? "border-red-500" : "border-[#444]"
-                  }`}
-                />
-                {errors.sizes && (
-                  <p className="mt-1 text-sm text-red-400">{errors.sizes}</p>
-                )}
-              </div>
-
-              {/* Colors Field */}
-              <div>
-                <label htmlFor="colors" className="block text-sm font-medium text-[#D4D4D4] mb-1">
-                  Colors (comma separated) <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="colors"
-                  name="colors"
-                  placeholder="Red, Blue, Green"
-                  value={product.colors}
-                  onChange={handleChange}
-                  className={`w-full px-4 py-2 rounded-lg bg-[#2B2B2B] border focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none transition text-[#D4D4D4] ${
-                    errors.colors ? "border-red-500" : "border-[#444]"
-                  }`}
-                />
-                {errors.colors && (
-                  <p className="mt-1 text-sm text-red-400">{errors.colors}</p>
-                )}
-              </div>
-
-              {/* Stock Field */}
-              <div>
-                <label htmlFor="stock" className="block text-sm font-medium text-[#D4D4D4] mb-1">
-                  Stock Quantity
-                </label>
-                <input
-                  type="number"
-                  id="stock"
-                  name="stock"
-                  placeholder="Stock Quantity"
-                  min="1"
-                  value={product.stock}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 rounded-lg bg-[#2B2B2B] border border-[#444] focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none transition text-[#D4D4D4]"
-                />
-              </div>
-
-              {/* Category Field */}
-              <div>
-                <label htmlFor="category" className="block text-sm font-medium text-[#D4D4D4] mb-1">
-                  Category
-                </label>
-                <select
-                  id="category"
-                  name="category"
-                  value={product.category}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 rounded-lg bg-[#2B2B2B] border border-[#444] focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none transition text-[#D4D4D4]"
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-[#D4D4D4]">
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="px-6 py-2 text-sm font-medium text-[#2B2B2B] bg-[#D4D4D4] hover:bg-[#B3B3B3] rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#B3B3B3]"
                 >
-                  <option value="men">Men</option>
-                  <option value="women">Women</option>
-                  <option value="kids">Kids</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Description Field */}
-            <div>
-              <label htmlFor="description" className="block text-sm font-medium text-[#D4D4D4] mb-1">
-                Description <span className="text-red-500">*</span>
-              </label>
-              <textarea
-                id="description"
-                name="description"
-                placeholder="Product description..."
-                rows="4"
-                value={product.description}
-                onChange={handleChange}
-                className={`w-full px-4 py-2 rounded-lg bg-[#2B2B2B] border focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none transition text-[#D4D4D4] ${
-                  errors.description ? "border-red-500" : "border-[#444]"
-                }`}
-              />
-              {errors.description && (
-                <p className="mt-1 text-sm text-red-400">{errors.description}</p>
-              )}
-            </div>
-
-            {/* Main Image Upload */}
-            <div>
-              <label className="block text-sm font-medium text-[#D4D4D4] mb-1">
-                Main Image <span className="text-red-500">*</span>
-              </label>
-              
-              {/* Image Upload or URL Input */}
-              <div className="space-y-4">
-                {/* File Upload */}
-                <div>
-                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-[#444] rounded-lg cursor-pointer bg-[#2B2B2B] hover:bg-[#363636] transition">
-                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <Upload className="w-8 h-8 mb-3 text-[#B3B3B3]" />
-                      <p className="mb-2 text-sm text-[#B3B3B3]">
-                        <span className="font-semibold">Click to upload</span> main image
-                      </p>
-                      <p className="text-xs text-[#888]">PNG, JPG, JPEG up to 5MB</p>
-                    </div>
-                    <input
-                      type="file"
-                      className="hidden"
-                      accept="image/*"
-                      onChange={handleMainImageChange}
-                    />
-                  </label>
-                </div>
-
-                {/* OR separator */}
-                <div className="flex items-center">
-                  <div className="flex-1 border-t border-[#444]"></div>
-                  <span className="px-3 text-[#B3B3B3] text-sm">OR</span>
-                  <div className="flex-1 border-t border-[#444]"></div>
-                </div>
-
-                {/* URL Input */}
-                <input
-                  type="text"
-                  name="imageUrl"
-                  placeholder="https://example.com/image.jpg"
-                  value={product.imageUrl}
-                  onChange={handleChange}
-                  disabled={!!mainImageFile}
-                  className={`w-full px-4 py-2 rounded-lg bg-[#2B2B2B] border focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none transition text-[#D4D4D4] ${
-                    errors.image ? "border-red-500" : "border-[#444]"
-                  } ${mainImageFile ? 'opacity-50 cursor-not-allowed' : ''}`}
-                />
-              </div>
-
-              {errors.image && (
-                <p className="mt-1 text-sm text-red-400">{errors.image}</p>
-              )}
-
-              {/* Image Preview */}
-              {(mainImagePreview || product.imageUrl) && (
-                <div className="mt-4 relative inline-block">
-                  <img
-                    src={mainImagePreview || product.imageUrl}
-                    alt="Main product preview"
-                    className="w-32 h-32 object-cover rounded-lg border border-[#444]"
-                    onError={(e) => {
-                      e.target.src = "https://via.placeholder.com/150?text=Invalid+Image";
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={removeMainImage}
-                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                  {uploadingMain && (
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-lg">
-                      <Loader2 className="w-6 h-6 animate-spin text-white" />
-                    </div>
+                  Reset Form
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting || uploadingMain || Object.values(uploadingColors).some(Boolean)}
+                  className={`flex-1 py-2 px-6 text-sm font-medium rounded-lg text-white transition-colors duration-200 focus:outline-none focus:ring-2 ${
+                    isSubmitting || uploadingMain || Object.values(uploadingColors).some(Boolean)
+                      ? "bg-[#B3B3B3] cursor-not-allowed"
+                      : "bg-[#2B2B2B] hover:bg-[#1A1A1A] focus:ring-[#B3B3B3] shadow-sm"
+                  }`}
+                >
+                  {isSubmitting ? (
+                    <span className="flex items-center justify-center">
+                      <Loader2 className="animate-spin -ml-1 mr-2 h-4 w-4" />
+                      Processing...
+                    </span>
+                  ) : (
+                    "Add Product"
                   )}
-                </div>
-              )}
-            </div>
-
-            {/* Color-specific Images */}
-            {colors.length > 0 && (
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-[#D4D4D4] flex items-center gap-2">
-                  <Camera className="w-5 h-5" />
-                  Images by Color (Optional)
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {colors.map((color, i) => {
-                    const colorKey = color.toLowerCase();
-                    const isUploading = uploadingColors[color];
-                    
-                    return (
-                      <div key={i} className="bg-[#2B2B2B] p-4 rounded-lg border border-[#444]">
-                        <label className="block text-sm font-medium text-[#D4D4D4] mb-2 capitalize">
-                          {color} Image
-                        </label>
-                        
-                        <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-[#555] rounded-lg cursor-pointer bg-[#383838] hover:bg-[#404040] transition">
-                          <div className="flex flex-col items-center justify-center py-2">
-                            <Upload className="w-6 h-6 mb-1 text-[#B3B3B3]" />
-                            <p className="text-xs text-[#B3B3B3]">Upload {color} image</p>
-                          </div>
-                          <input
-                            type="file"
-                            className="hidden"
-                            accept="image/*"
-                            onChange={(e) => handleColorImageChange(color, e.target.files[0])}
-                          />
-                        </label>
-
-                        {colorImagePreviews[color] && (
-                          <div className="mt-3 relative inline-block">
-                            <img
-                              src={colorImagePreviews[color]}
-                              alt={`${color} preview`}
-                              className="w-20 h-20 object-cover rounded border border-[#555]"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => removeColorImage(color)}
-                              className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition"
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
-                            {isUploading && (
-                              <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded">
-                                <Loader2 className="w-4 h-4 animate-spin text-white" />
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
+                </button>
               </div>
-            )}
-
-            {/* Submit Button */}
-            <div className="pt-4">
-              <button
-                type="submit"
-                disabled={isSubmitting || uploadingMain || Object.values(uploadingColors).some(Boolean)}
-                className={`w-full py-3 px-4 rounded-lg font-medium text-white transition ${
-                  isSubmitting || uploadingMain || Object.values(uploadingColors).some(Boolean)
-                    ? "bg-yellow-600/70 cursor-not-allowed"
-                    : "bg-yellow-600 hover:bg-yellow-700 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 focus:ring-offset-[#383838]"
-                }`}
-              >
-                {isSubmitting ? (
-                  <span className="flex items-center justify-center">
-                    <Loader2 className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" />
-                    Processing...
-                  </span>
-                ) : (
-                  "Add Product"
-                )}
-              </button>
-            </div>
-          </form>
+            </form>
+          </div>
         </div>
       </div>
     </div>

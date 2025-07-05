@@ -25,15 +25,16 @@ import AdminDashboard from "./admin/AdminDashboard";
 import "./index.css";
 import AddProduct from "./admin/AddProduct";
 import ManageProducts from "./admin/ManageProducts";
-import ManageUser from './admin/ManageUsers';
+import ManageUser from "./admin/ManageUsers";
 import ManageOrders from "./admin/ManageOrders";
 import AboutPage from "./pages/about";
 import UpdatePassword from "./users/UpdatePassword";
-import Settings from './admin/Setting';
+import Settings from "./admin/Setting";
 import AdminNavbar from "./admin/AdminNavbar";
-import OrderConfirm from "./pages/OrderConfirm"; // ✅ Ensure this file exists
+import OrderConfirm from "./pages/OrderConfirm";
 import MyOrders from "./pages/MyOrders";
 import PageNotFound from "./pages/PageNotFound";
+import PrivateRoute from "./components/PrivateRoute"; // ✅ Import this
 
 // Array of all admin routes
 const adminRoutes = [
@@ -42,33 +43,28 @@ const adminRoutes = [
   "/admin/products",
   "/admin/users",
   "/admin/orders",
-  "/admin/settings"
+  "/admin/settings",
 ];
 
 function AppLayout() {
   const location = useLocation();
-  
-  // Check if current route is an admin route
-  const isAdminRoute = adminRoutes.some(path => 
+
+  const isAdminRoute = adminRoutes.some((path) =>
     matchPath({ path, end: false }, location.pathname)
   );
 
-  // Routes where we want to hide both navbars and footer
   const hideAllLayoutRoutes = ["/login", "/register", "/verify"];
 
-  const shouldHideAllLayout = hideAllLayoutRoutes.some(path =>
+  const shouldHideAllLayout = hideAllLayoutRoutes.some((path) =>
     matchPath({ path, end: true }, location.pathname)
   );
 
   return (
     <>
-      {/* Show AdminNavbar for admin routes, regular Navbar for others */}
-      {!shouldHideAllLayout && (
-        isAdminRoute ? <AdminNavbar /> : <Navbar />
-      )}
-      
+      {!shouldHideAllLayout && (isAdminRoute ? <AdminNavbar /> : <Navbar />)}
+
       <Routes>
-        {/* Public Pages */}
+        {/* Public Routes */}
         <Route path="/" element={<Home />} />
         <Route path="/products" element={<Products />} />
         <Route path="/products/:id" element={<ProductDetails />} />
@@ -81,20 +77,96 @@ function AppLayout() {
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/update-password" element={<UpdatePassword />} />
-        <Route path="/order-confirm" element={<OrderConfirm />} /> {/* ✅ FIXED LINE */}
-        <Route path='/my-orders' element={<MyOrders/>} />
-        <Route path="*" element={<PageNotFound/>} />
-        
-        {/* Admin Routes */}
-        <Route path="/admin-dashboard" element={<AdminDashboard />} />
-        <Route path="/admin/add-product" element={<AddProduct />} />
-        <Route path="/admin/products" element={<ManageProducts />} />
-        <Route path="/admin/users" element={<ManageUser />} />
-        <Route path="/admin/orders" element={<ManageOrders />} />
-        <Route path="/admin/settings" element={<Settings />} />
+        <Route path="/order-confirm" element={<OrderConfirm />} />
+        <Route path="/my-orders" element={<MyOrders />} />
+        <Route path="*" element={<PageNotFound />} />
+
+        <Route
+          path="/order"
+          element={
+            <PrivateRoute>
+              <Order />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/checkout"
+          element={
+            <PrivateRoute>
+              <Checkout />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/profile"
+          element={
+            <PrivateRoute>
+              <Profile />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/products/:id"
+          element={
+            <PrivateRoute>
+              <ProductDetails />
+            </PrivateRoute>
+          }
+        />
+
+        {/* Admin Routes - Protected by PrivateRoute */}
+        <Route
+          path="/admin-dashboard"
+          element={
+            <PrivateRoute>
+              <AdminDashboard />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin/add-product"
+          element={
+            <PrivateRoute>
+              <AddProduct />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin/products"
+          element={
+            <PrivateRoute>
+              <ManageProducts />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <PrivateRoute>
+              <ManageUser />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin/orders"
+          element={
+            <PrivateRoute>
+              <ManageOrders />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin/settings"
+          element={
+            <PrivateRoute>
+              <Settings />
+            </PrivateRoute>
+          }
+        />
       </Routes>
-      
-      {/* Don't show footer for admin routes or hidden layout routes */}
+
       {!shouldHideAllLayout && !isAdminRoute && <Footer />}
     </>
   );

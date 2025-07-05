@@ -1,21 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { CheckCircle, Loader2, ArrowLeft } from "lucide-react";
+import toast, { Toaster } from "react-hot-toast";
 
 function Verify() {
   const navigate = useNavigate();
   const location = useLocation();
   const [code, setCode] = useState("");
-  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [resendDisabled, setResendDisabled] = useState(false);
   const [countdown, setCountdown] = useState(30);
   const [email, setEmail] = useState("");
 
   useEffect(() => {
-    // Get email from location state if coming from signup
     if (location.state?.email) {
       setEmail(location.state.email);
+      toast.success(`Verification code sent to ${location.state.email}`);
     }
   }, [location.state]);
 
@@ -31,13 +31,13 @@ function Verify() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
     
     if (code.length !== 6) {
-      return setError("Code must be 6 digits");
+      return toast.error("Code must be 6 digits");
     }
 
     setIsLoading(true);
+    const loadingToast = toast.loading("Verifying your code...");
     
     try {
       const res = await fetch("http://localhost:8080/auth/verifyEmail", {
@@ -54,20 +54,22 @@ function Verify() {
 
       localStorage.setItem("token", result.token);
       localStorage.setItem("role", result.role);
+      
+      toast.success("Email verified successfully!", { id: loadingToast });
       navigate(result.role === "Admin" ? "/admin-dashboard" : "/", {
         replace: true
       });
     } catch (err) {
       console.error(err);
-      setError(err.message || "Something went wrong during verification.");
+      toast.error(err.message || "Verification failed. Please try again.", { id: loadingToast });
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleResendCode = async () => {
-    setError("");
     setIsLoading(true);
+    const loadingToast = toast.loading("Resending verification code...");
     
     try {
       const res = await fetch("http://localhost:8080/auth/resendVerification", {
@@ -84,9 +86,10 @@ function Verify() {
 
       setResendDisabled(true);
       setCountdown(30);
+      toast.success(`New code sent to ${email}`, { id: loadingToast });
     } catch (err) {
       console.error(err);
-      setError(err.message || "Failed to resend verification code");
+      toast.error(err.message || "Failed to resend code", { id: loadingToast });
     } finally {
       setIsLoading(false);
     }
@@ -94,6 +97,29 @@ function Verify() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#2B2B2B] px-4 text-white">
+      <Toaster 
+        position="top-center"
+        toastOptions={{
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
+            duration: 3000,
+            iconTheme: {
+              primary: '#4CAF50',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            duration: 4000,
+          },
+          loading: {
+            duration: Infinity,
+          }
+        }}
+      />
+      
       <div className="w-full max-w-md">
         <button
           onClick={() => navigate(-1)}
@@ -136,24 +162,6 @@ function Verify() {
                 autoFocus
               />
             </div>
-            
-            {error && (
-              <p className="text-red-400 text-sm flex items-center gap-1">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                {error}
-              </p>
-            )}
             
             <button
               type="submit"

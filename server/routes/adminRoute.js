@@ -1,6 +1,7 @@
 import express from "express";
 import multer from "multer";
 import cloudinaryConfig from "../cloudConfig.js";
+import wrapAsync from "../utils/wrapAsync.js";
 const route = express.Router();
 
 import {
@@ -38,7 +39,7 @@ const upload = multer({
 
 // ... (other existing routes remain the same)
 
-route.get("/product", allProduct);
+route.get("/product", wrapAsync(allProduct));
 
 // Enhanced addproduct route with Cloudinary support
 route.post(
@@ -47,41 +48,34 @@ route.post(
     { name: "mainImage", maxCount: 1 },
     { name: "colorImages", maxCount: 10 },
   ]),
-  addProduct
+  wrapAsync(addProduct)
 );
 
-// New route for uploading single image
-route.post("/upload-image", upload.single("image"), uploadImage);
+route.post("/upload-image", upload.single("image"), wrapAsync(uploadImage));
 
-// New route for uploading multiple images
-route.post("/upload-images", upload.array("images", 10), manyImageUpload);
+route.post("/upload-images", upload.array("images", 10), wrapAsync(manyImageUpload));
 
-// Route to delete image from Cloudinary
-route.delete("/delete-image/:publicId", deleteProductCloudinary);
+route.delete("/delete-image/:publicId", wrapAsync(deleteProductCloudinary));
 
-route.put("/product/:id/toggle-stock", stockHendle);
+route.put("/product/:id/toggle-stock", wrapAsync(stockHendle));
 
-route.delete("/product/:id", deleteProduct);
+route.delete("/product/:id", wrapAsync(deleteProduct));
 
-// Get product count
-route.get("/product/count", productCount);
+route.get("/product/count", wrapAsync(productCount));
 
-route.get("/user", allUser);
+route.get("/user", wrapAsync(allUser));
 
-// Get user count
-route.get("/user/count", userCount);
+route.get("/user/count", wrapAsync(userCount));
 
-route.delete("/user/:id", userDelete);
+route.delete("/user/:id", wrapAsync(userDelete));
 
-route.get("/order/count", orderCount);
+route.get("/order/count", wrapAsync(orderCount));
 
-// Enhanced GET /admin/order route with complete user population
-route.get("/order", allOrder);
+route.get("/order", wrapAsync(allOrder));
 
-// Enhanced PUT /admin/order/:id/status with better error handling
-route.put("/order/:id/status", orderUpdate);
+route.put("/order/:id/status", wrapAsync(orderUpdate));
 
-// Additional route to get detailed order statistics
-route.get("/order/stats", orderDetail);
+route.get("/order/stats", wrapAsync(orderDetail));
+
 
 export default route;
