@@ -62,7 +62,7 @@ function Login() {
         });
 
         setTimeout(() => {
-          if (result.role === "Admin") {
+          if (result.user.role === "Admin") {
             navigate("/admin-dashboard", { replace: true });
           } else {
             navigate(redirectPath, { replace: true });
