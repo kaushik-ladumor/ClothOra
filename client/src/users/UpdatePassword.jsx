@@ -16,21 +16,22 @@ function UpdatePassword() {
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!oldPassword) newErrors.oldPassword = "Current password is required";
     if (!newPassword) newErrors.newPassword = "New password is required";
-    else if (newPassword.length < 6) newErrors.newPassword = "Password must be at least 8 characters";
-    
+    // 🔧 FIX: Made validation and message consistent (6 characters)
+    else if (newPassword.length < 6) newErrors.newPassword = "Password must be at least 6 characters";
+
     if (!confirmPassword) newErrors.confirmPassword = "Please confirm your password";
     else if (newPassword !== confirmPassword) newErrors.confirmPassword = "Passwords don't match";
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handlePassword = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
     try {
@@ -51,17 +52,17 @@ function UpdatePassword() {
         throw new Error(data.message || "Failed to update password");
       }
 
-      toast.success("✅ Password updated successfully!");
+      toast.success("Password updated successfully!");
       setTimeout(() => navigate("/profile"), 1000);
     } catch (err) {
-      toast.error(`❌ ${err.message}`);
+      toast.error(`${err.message}`);
       console.error(err);
     }
   };
 
   return (
     <>
-      <ToastContainer 
+      <ToastContainer
         position="top-right"
         autoClose={3000}
         hideProgressBar={false}
@@ -74,13 +75,13 @@ function UpdatePassword() {
         toastClassName="bg-white text-gray-800 shadow-lg"
         progressClassName="bg-gray-200"
       />
-      
+
       <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4 sm:p-6">
         <div className="bg-white shadow-xl rounded-xl w-full max-w-md p-6 sm:p-8">
           <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-800 mb-6">
             Update Password
           </h2>
-          
+
           <form onSubmit={handlePassword} className="space-y-4 sm:space-y-6">
             <div>
               <label htmlFor="oldPassword" className="block text-sm font-medium text-gray-700 mb-1">

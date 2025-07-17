@@ -1,11 +1,11 @@
 import mongoose from "mongoose";
-import bcrypt from "bcryptjs"; // ✅ Import bcrypt
+import bcryptjs from "bcryptjs";
 
 const userSchema = new mongoose.Schema(
   {
     email: { type: String, required: true, unique: true },
     name: { type: String, required: true, unique: true },
-    password: { type: String, required: true, select: false }, // optional: add select: false
+    password: { type: String, required: true, select: false },
     isVerified: { type: Boolean, default: false },
     verificationCode: String,
     role: {
@@ -17,19 +17,35 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// ✅ Compare password method
-userSchema.methods.verifyPassword = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password);
-};
-
-// ✅ Pre-save hook to hash password
+// Pre-save hook to hash password
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
 
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-  next();
+  try {
+    const salt = await bcryptjs.genSalt(10);
+    this.password = await bcryptjs.hash(this.password, salt);
+    next();
+  } catch (error) {
+    next(error);
+  }
 });
+
+// Compare password method - FIXED
+userSchema.methods.verifyPassword = async function (enteredPassword) {
+  try {
+    console.log("Comparing passwords...");
+    console.log("Entered password:", enteredPassword);
+    console.log("Stored hash:", this.password);
+
+    const isMatch = await bcryptjs.compare(enteredPassword, this.password);
+    console.log("Password match result:", isMatch);
+
+    return isMatch;
+  } catch (error) {
+    console.error("Password comparison error:", error);
+    return false;
+  }
+};
 
 const User = mongoose.model("User", userSchema);
 export default User;

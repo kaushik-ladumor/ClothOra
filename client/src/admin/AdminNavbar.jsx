@@ -33,21 +33,15 @@ const AdminNavbar = () => {
 
           {/* Primary Nav Links */}
           <div className="flex space-x-6">
-            <NavLink to="/admin-dashboard" icon={<Home size={18} />} label="Dashboard" />
             <NavLink to="/admin/products" icon={<Package size={18} />} label="Products" />
+            <NavLink to='/admin/add-product' icon={<PlusCircle size={18} />}
+              label="Add Product" />
             <NavLink to="/admin/orders" icon={<ShoppingCart size={18} />} label="Orders" />
             <NavLink to="/admin/users" icon={<Users size={18} />} label="Users" />
           </div>
 
           {/* Right Side Actions */}
           <div className="flex space-x-4">
-            <Link 
-              to="/admin/add-product" 
-              className="flex items-center px-3 py-1 bg-[#2B2B2B] hover:bg-[#383838] rounded text-sm transition"
-            >
-              <PlusCircle size={16} className="mr-2" />
-              Add Product
-            </Link>
             <button 
               onClick={() => navigate("/admin/settings")} 
               className="p-2 hover:text-white transition"

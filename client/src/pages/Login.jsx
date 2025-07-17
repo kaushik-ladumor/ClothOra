@@ -7,7 +7,10 @@ import "react-toastify/dist/ReactToastify.css";
 function Login() {
   const navigate = useNavigate();
   const location = useLocation();
-  const redirectPath = new URLSearchParams(location.search).get("redirect") || "/";
+
+  // Get redirect path from URL search parameters
+  const searchParams = new URLSearchParams(location.search);
+  const redirectPath = searchParams.get('redirect') || "/";
 
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
@@ -17,7 +20,6 @@ function Login() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    // Clear error when typing
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
@@ -49,7 +51,7 @@ function Login() {
       if (result.success) {
         localStorage.setItem("token", result.token);
         localStorage.setItem("role", result.role);
-        
+
         toast.success("Login successful!", {
           position: "top-right",
           autoClose: 2000,
@@ -61,9 +63,9 @@ function Login() {
 
         setTimeout(() => {
           if (result.role === "Admin") {
-            navigate("/admin-dashboard");
+            navigate("/admin-dashboard", { replace: true });
           } else {
-            navigate(redirectPath);
+            navigate(redirectPath, { replace: true });
           }
         }, 2000);
       } else {

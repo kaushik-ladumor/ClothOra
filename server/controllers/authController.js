@@ -1,5 +1,4 @@
 import User from "../models/User.js";
-import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { sendVerificationCode, sendWelcomeEmail } from "../middleware/email.js";
 
@@ -18,12 +17,6 @@ export const signup = async (req, res) => {
     const { email, name, password, role } = req.body;
 
     // Input validation
-    if (typeof password !== "string") {
-      return res.status(400).json({ message: "Password must be a string" });
-    }
-    if (password.length < 6) {
-      return res.status(400).json({ message: "Password must be at least 6 characters long" });
-    }
     if (!email || !password || !name) {
       return res.status(400).json({
         success: false,
@@ -31,24 +24,50 @@ export const signup = async (req, res) => {
       });
     }
 
-    // Check for existing user
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
+    if (typeof password !== "string") {
       return res.status(400).json({
         success: false,
-        message: "User already exists",
+        message: "Password must be a string"
       });
     }
 
-    // Hash password and generate 6-digit code
-    const hashPassword = await bcryptjs.hash(password, 10);
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 6 characters long"
+      });
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide a valid email address",
+      });
+    }
+
+    // Check for existing user
+    const existingUser = await User.findOne({
+      $or: [{ email }, { name }]
+    });
+
+    if (existingUser) {
+      const field = existingUser.email === email ? "email" : "name";
+      return res.status(400).json({
+        success: false,
+        message: `User with this ${field} already exists`,
+      });
+    }
+
+    // Generate 6-digit verification code
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Create user
+    // Create user - password will be hashed by pre-save hook
     const user = new User({
-      email,
-      name,
-      password: hashPassword,
+      email: email.toLowerCase().trim(),
+      name: name.trim(),
+      password,
       verificationCode,
       role: role || "User",
     });
@@ -56,15 +75,47 @@ export const signup = async (req, res) => {
     await user.save();
 
     // Send email with verification code
-    await sendVerificationCode(user.email, verificationCode);
+    try {
+      await sendVerificationCode(user.email, verificationCode);
+    } catch (emailError) {
+      console.error("Email sending error:", emailError);
+      // Delete user if email fails to send
+      await User.findByIdAndDelete(user._id);
+      return res.status(500).json({
+        success: false,
+        message: "Failed to send verification email. Please try again.",
+      });
+    }
 
     res.status(201).json({
       success: true,
-      message: "User registered successfully. Please verify your email.",
+      message: "User registered successfully. Please check your email for verification code.",
     });
   } catch (error) {
     console.error("Signup error:", error);
-    res.status(500).json({ success: false, message: "Internal Server Error" });
+
+    // Handle duplicate key error for unique fields
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyValue)[0];
+      return res.status(400).json({
+        success: false,
+        message: `${field} already exists`,
+      });
+    }
+
+    // Handle validation errors
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({
+        success: false,
+        message: messages[0] || "Validation error"
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error"
+    });
   }
 };
 
@@ -76,31 +127,40 @@ export const login = async (req, res) => {
     const { email, password } = req.body;
 
     // Input validation
-    if (typeof password !== "string") {
-      return res.status(400).json({ message: "Password must be a string" });
-    }
     if (!email || !password) {
       return res.status(400).json({
         success: false,
-        message: "All fields are required",
+        message: "Email and password are required",
       });
     }
 
-    // Find user by email
-    const user = await User.findOne({ email }).select("+password");
+    if (typeof password !== "string") {
+      return res.status(400).json({
+        success: false,
+        message: "Password must be a string"
+      });
+    }
+
+    // Find user by email and include password field
+    const user = await User.findOne({
+      email: email.toLowerCase().trim()
+    }).select("+password");
+
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: "Invalid credentials",
+        message: "User does not exist!",
       });
     }
 
-    // Compare password
-    const isPasswordValid = await bcryptjs.compare(password, user.password);
+    // Compare password using the model method
+    const isPasswordValid = await user.verifyPassword(password);
+    console.log("Password validation result:", isPasswordValid);
+
     if (!isPasswordValid) {
       return res.status(401).json({
         success: false,
-        message: "Invalid credentials",
+        message: "Wrong password"
       });
     }
 
@@ -115,20 +175,32 @@ export const login = async (req, res) => {
     // Generate token
     const token = generateToken(user._id);
 
+    // Set token in httpOnly cookie for security
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 2 * 24 * 60 * 60 * 1000, // 2 days
+    });
+
     res.status(200).json({
       success: true,
       message: "Login successful",
       token,
-      role: user.role,
       user: {
         id: user._id,
         email: user.email,
         name: user.name,
+        role: user.role,
+        isVerified: user.isVerified,
       },
     });
   } catch (error) {
     console.error("Login error:", error);
-    res.status(500).json({ success: false, message: "Internal Server Error" });
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error"
+    });
   }
 };
 
@@ -146,7 +218,18 @@ export const verifyEmail = async (req, res) => {
       });
     }
 
-    const user = await User.findOne({ verificationCode });
+    // Validate verification code format (6 digits)
+    if (!/^\d{6}$/.test(verificationCode)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid verification code format",
+      });
+    }
+
+    const user = await User.findOne({
+      verificationCode: verificationCode.toString()
+    });
+
     if (!user) {
       return res.status(400).json({
         success: false,
@@ -154,29 +237,56 @@ export const verifyEmail = async (req, res) => {
       });
     }
 
+    // Check if user is already verified
+    if (user.isVerified) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is already verified",
+      });
+    }
+
+    // Update user verification status
     user.isVerified = true;
     user.verificationCode = undefined;
     await user.save();
 
     // Send welcome email
-    await sendWelcomeEmail(user.email, user.name);
+    try {
+      await sendWelcomeEmail(user.email, user.name);
+    } catch (emailError) {
+      console.error("Welcome email error:", emailError);
+      // Don't fail the verification if welcome email fails
+    }
 
+    // Generate token for immediate login after verification
     const token = generateToken(user._id);
+
+    // Set token in httpOnly cookie
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 2 * 24 * 60 * 60 * 1000, // 2 days
+    });
 
     res.status(200).json({
       success: true,
       message: "Email verified successfully",
-      role: user.role,
       token,
       user: {
         id: user._id,
         email: user.email,
         name: user.name,
+        role: user.role,
+        isVerified: user.isVerified,
       },
     });
   } catch (error) {
     console.error("Email verification error:", error);
-    res.status(500).json({ success: false, message: "Internal Server Error" });
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error"
+    });
   }
 };
 
@@ -185,7 +295,13 @@ export const verifyEmail = async (req, res) => {
 // ==========================
 export const logout = async (req, res) => {
   try {
-    // JWT logout is client-side (remove token)
+    // Clear the httpOnly cookie
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+    });
+
     res.status(200).json({
       success: true,
       message: "Logout successful",

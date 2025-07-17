@@ -276,7 +276,7 @@ function Checkout() {
         console.log("Original phone number:", customerInfo.phone);
 
         const options = {
-          key: "rzp_test_j0Uotej97JbWGF",
+          key: process.env.REACT_APP_RAZORPAY_KEY,
           amount: paymentData.amount,
           currency: paymentData.currency,
           name: "Clothora",
@@ -311,26 +311,28 @@ function Checkout() {
                     paymentMethod: "Online",
                     paymentStatus: "Paid",
                     customerEmail: customerInfo.email,
-                    phoneNumber: customerInfo.phone
-                  }
+                    phoneNumber: customerInfo.phone,
+                  },
                 },
-                replace: true
+                replace: true,
               });
             } catch (err) {
               console.error("Payment update failed:", err);
-              alert("Payment successful but failed to update order. Please contact support.");
+              alert(
+                "Payment successful but failed to update order. Please contact support."
+              );
             }
           },
           prefill: {
             name: userDetails?.name || userDetails?.firstName || "Customer",
             email: customerInfo.email,
-            contact: formatPhoneForRazorpay(customerInfo.phone) // Use the phone number from form
+            contact: formatPhoneForRazorpay(customerInfo.phone), // Use the phone number from form
           },
           notes: {
             customer_phone: customerInfo.phone,
-            order_id: order._id
+            order_id: order._id,
           },
-          theme: { color: "#2B2B2B" }
+          theme: { color: "#2B2B2B" },
         };
 
         const rzp = new window.Razorpay(options);
@@ -464,19 +466,13 @@ function Checkout() {
                   readOnly={isEmailFromProfile} // Make it read-only as well
                 />
                 {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
-                {isEmailFromProfile && (
+                {/* {isEmailFromProfile && (
                   <p className="text-sm text-green-600 mt-1 flex items-center">
                     <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
-                    આપનો પ્રોફાઇલ ઈમેઇલ વપરાઈ રહ્યો છે (Profile email is being used)
                   </p>
-                )}
-                {!isEmailFromProfile && !token && (
-                  <p className="text-sm text-blue-600 mt-1">
-                    ⓘ લૉગિન કરો તો આપનો પ્રોફાઇલ ઈમેઇલ ઓટોમેટિક ભરાઈ જશે
-                  </p>
-                )}
+                )} */}
               </div>
 
               <div>
@@ -491,9 +487,6 @@ function Checkout() {
                   className={`w-full p-3 border rounded-lg ${errors.phone ? "border-red-500" : "border-[#D4D4D4]"}`}
                 />
                 {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
-                {customerInfo.phone && customerInfo.phone.length === 10 && (
-                  <p className="text-sm text-green-600 mt-1">✓ This number will be used for Razorpay</p>
-                )}
               </div>
             </div>
 

@@ -1,5 +1,4 @@
 import User from '../models/User.js';
-import bcryptjs from 'bcryptjs';
 
 export const FindUser = async (req, res) => {
   try {
@@ -55,8 +54,8 @@ export const updatePassword = async (req, res) => {
     console.log("Found user:", user.email);
     console.log("Verifying old password...");
 
-    // Verify old password
-    const isOldPasswordValid = await bcryptjs.compare(oldPassword, user.password);
+    // 🔧 FIX: Use 'oldPassword' instead of 'password'
+    const isOldPasswordValid = await user.verifyPassword(oldPassword);
     console.log("Old password valid:", isOldPasswordValid);
 
     if (!isOldPasswordValid) {
@@ -66,13 +65,9 @@ export const updatePassword = async (req, res) => {
       });
     }
 
-    // Hash new password
-    const hashedNewPassword = await bcryptjs.hash(newPassword, 10);
-    
-    // Update password (using req.user.id from JWT)
-    await User.findByIdAndUpdate(req.user.id, { 
-      password: hashedNewPassword 
-    });
+    // Update password (pre-save hook will hash it automatically)
+    user.password = newPassword;
+    await user.save();
 
     console.log("Password updated successfully");
 
@@ -89,5 +84,3 @@ export const updatePassword = async (req, res) => {
     });
   }
 };
-
-

@@ -232,7 +232,7 @@ const AboutPage = () => {
                   Shop the Collection
                 </a>
                 <a
-                  href="/story"
+                  href="#"
                   className="px-10 py-4 border-2 border-white/30 text-white rounded-2xl font-semibold text-lg hover:border-white hover:bg-white/10 transition-all duration-300"
                 >
                   Our Story
