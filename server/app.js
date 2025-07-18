@@ -26,10 +26,13 @@ app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 // Enable CORS for frontend access
 app.use(cors({
   origin: [
-    'http://localhost:5173', // React frontend
-    'https://cloth-ora-l6i8.vercel.app'
+    'http://localhost:5173', // React frontend (local development)
+    'https://cloth-ora-l6i8.vercel.app', // Your Vercel deployment
+    'https://cloth-d821kfjmu-kaushik-ladumors-projects.vercel.app' // The URL from the error
   ],
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // Parse JSON payloads
