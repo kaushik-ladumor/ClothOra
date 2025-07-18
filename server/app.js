@@ -2,7 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import passport from 'passport';
-import path from 'path';
+import path from "path";
 
 import connectDB from './config/db.js';
 import initializePassport from './config/passport.js';
@@ -18,58 +18,55 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 8080;
 
-// ✅ Connect to MongoDB
+// Connect to MongoDB
 connectDB();
 
-// ✅ Serve uploaded images
+// Static files
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
-// ✅ Setup CORS
-const allowedOrigins = [
-  'http://localhost:5173',
-  'https://cloth-ora-l6i8.vercel.app',
-  'https://cloth-d821kfjmu-kaushik-ladumors-projects.vercel.app'
-];
-
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+// CORS
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'https://cloth-ora-l6i8.vercel.app'
+  ],
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-};
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+}));
 
-app.use(cors(corsOptions));
-
-// ✅ Handle preflight requests (important for CORS)
-app.options('*', cors(corsOptions));
-
-// ✅ Parse JSON payloads
+// Middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// ✅ Initialize Passport.js
+// Passport
 initializePassport(passport);
 app.use(passport.initialize());
 
-// ✅ Test Route
+// Routes
 app.get('/', (req, res) => {
-  res.send('Welcome to ClothOra API');
+  res.send('Home Route');
 });
 
-// ✅ API Routes
-app.use('/product', productRoutes);
-app.use('/auth', authRoutes);
-app.use('/profile', userRoutes);
-app.use('/cart', cartRoutes);
-app.use('/order', orderRoutes);
-app.use('/admin', adminRoutes);
+// API Routes - Add error handling for route registration
+try {
+  app.use('/product', productRoutes);
+  app.use('/auth', authRoutes);
+  app.use('/profile', userRoutes);
+  app.use('/cart', cartRoutes);
+  app.use('/order', orderRoutes);
+  app.use('/admin', adminRoutes);
+} catch (err) {
+  console.error('Route registration failed:', err);
+  process.exit(1);
+}
 
-// ✅ Start server
+// Error handling
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send('Something broke!');
+});
+
+// Start server
 app.listen(port, () => {
   console.log(`✅ Server running at http://localhost:${port}`);
 });
