@@ -229,7 +229,7 @@ function Checkout() {
         paymentMethod,
         phoneNumber: customerInfo.phone.trim(), // This will be saved in order schema
       };
-
+      const API_URL = import.meta.env.VITE_API_KEY;
       const orderResponse = await fetch(`${API_URL}order`, {
         method: "POST",
         headers: {
@@ -287,6 +287,7 @@ function Checkout() {
           order_id: paymentData.order_id,
           handler: async function (response) {
             try {
+              const API_URL = import.meta.env.VITE_API_KEY;
               await fetch(`${API_URL}order/update-payment`, {
                 method: "POST",
                 headers: {
