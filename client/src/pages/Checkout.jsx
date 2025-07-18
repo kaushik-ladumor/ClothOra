@@ -274,9 +274,11 @@ function Checkout() {
         // Debug: Log the phone number being sent to Razorpay
         console.log("Phone number being sent to Razorpay:", formatPhoneForRazorpay(customerInfo.phone));
         console.log("Original phone number:", customerInfo.phone);
+        const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY;
 
+        console.log(razorpayKey);
         const options = {
-          key: process.env.REACT_APP_RAZORPAY_KEY,
+          key: razorpayKey,
           amount: paymentData.amount,
           currency: paymentData.currency,
           name: "Clothora",

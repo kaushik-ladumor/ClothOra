@@ -5,9 +5,6 @@ import {
   PlusCircle,
   ShoppingCart,
   Users,
-  BarChart2,
-  Settings,
-  LogOut,
 } from 'lucide-react';
 
 function AdminDashboard() {

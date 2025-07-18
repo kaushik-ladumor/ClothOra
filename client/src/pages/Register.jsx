@@ -43,7 +43,7 @@ function Register() {
       newErrors.password = "Password must be at least 6 characters";
     }
 
-    const ADMIN_SECRET_KEY = process.env.REACT_APP_ADMIN_SECRET_KEY;
+    const ADMIN_SECRET_KEY = import.meta.env.VITE_RAZORPAY_KEY;
 
     if (formData.role === "Admin" && !secretKey) {
       newErrors.secretKey = "Secret key is required for admin";

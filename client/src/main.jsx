@@ -6,9 +6,9 @@ import {
   Route,
   useLocation,
   matchPath,
-  Navigate,
 } from "react-router-dom";
 
+// Pages
 import Home from "./pages/Home";
 import Products from "./pages/Products";
 import ProductDetails from "./pages/ProductDetails";
@@ -17,26 +17,35 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Profile from "./pages/Profile";
 import Verify from "./pages/verify";
-import Navbar from "./components/Navbar";
-import Footer from "./components/Footer";
+import AboutPage from "./pages/about";
 import Order from "./pages/Order";
 import Checkout from "./pages/Checkout";
+import OrderConfirm from "./pages/OrderConfirm";
+import MyOrders from "./pages/MyOrders";
+import PageNotFound from "./pages/PageNotFound";
+import UpdatePassword from "./users/UpdatePassword";
+
+// Admin Pages
 import AdminDashboard from "./admin/AdminDashboard";
-import "./index.css";
 import AddProduct from "./admin/AddProduct";
 import ManageProducts from "./admin/ManageProducts";
 import ManageUser from "./admin/ManageUsers";
 import ManageOrders from "./admin/ManageOrders";
-import AboutPage from "./pages/about";
-import UpdatePassword from "./users/UpdatePassword";
 import Settings from "./admin/Setting";
-import AdminNavbar from "./admin/AdminNavbar";
-import OrderConfirm from "./pages/OrderConfirm";
-import MyOrders from "./pages/MyOrders";
-import PageNotFound from "./pages/PageNotFound";
-import PrivateRoute from "./components/PrivateRoute"; // ✅ Import this
 
-// Array of all admin routes
+// Layouts
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
+import AdminNavbar from "./admin/AdminNavbar";
+
+// Route Guards
+import PrivateRoute from "./components/PrivateRoute";
+import AdminRoute from "./components/AdminRoute";
+
+// Styles
+import "./index.css";
+
+// Admin-specific paths
 const adminRoutes = [
   "/admin-dashboard",
   "/admin/add-product",
@@ -46,14 +55,15 @@ const adminRoutes = [
   "/admin/settings",
 ];
 
+// Pages without any layout (Navbar/Footer)
+const hideAllLayoutRoutes = ["/login", "/register", "/verify"];
+
 function AppLayout() {
   const location = useLocation();
 
   const isAdminRoute = adminRoutes.some((path) =>
     matchPath({ path, end: false }, location.pathname)
   );
-
-  const hideAllLayoutRoutes = ["/login", "/register", "/verify"];
 
   const shouldHideAllLayout = hideAllLayoutRoutes.some((path) =>
     matchPath({ path, end: true }, location.pathname)
@@ -67,29 +77,25 @@ function AppLayout() {
         {/* Public Routes */}
         <Route path="/" element={<Home />} />
         <Route path="/products" element={<Products />} />
-        <Route path="/products/:id" element={<ProductDetails />} />
-        <Route path="/order" element={<Order />} />
-        <Route path="/cart" element={<Cart />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/verify" element={<Verify />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/checkout" element={<Checkout />} />
         <Route path="/about" element={<AboutPage />} />
-        <Route path="/update-password" element={<UpdatePassword />} />
         <Route path="/order-confirm" element={<OrderConfirm />} />
         <Route path="/my-orders" element={<MyOrders />} />
+        <Route path="/update-password" element={<UpdatePassword />} />
         <Route path="*" element={<PageNotFound />} />
 
+        {/* User Protected Routes */}
+        <Route path="/products/:id" element={<ProductDetails />} />
         <Route
-          path="/order"
+          path="/cart"
           element={
             <PrivateRoute>
-              <Order />
+              <Cart />
             </PrivateRoute>
           }
         />
-
         <Route
           path="/checkout"
           element={
@@ -98,7 +104,14 @@ function AppLayout() {
             </PrivateRoute>
           }
         />
-
+        <Route
+          path="/order"
+          element={
+            <PrivateRoute>
+              <Order />
+            </PrivateRoute>
+          }
+        />
         <Route
           path="/profile"
           element={
@@ -107,62 +120,54 @@ function AppLayout() {
             </PrivateRoute>
           }
         />
-        <Route
-          path="/products/:id"
-          element={
-            <PrivateRoute>
-              <ProductDetails />
-            </PrivateRoute>
-          }
-        />
 
-        {/* Admin Routes - Protected by PrivateRoute */}
+        {/* Admin Protected Routes */}
         <Route
           path="/admin-dashboard"
           element={
-            <PrivateRoute>
+            <AdminRoute>
               <AdminDashboard />
-            </PrivateRoute>
+            </AdminRoute>
           }
         />
         <Route
           path="/admin/add-product"
           element={
-            <PrivateRoute>
+            <AdminRoute>
               <AddProduct />
-            </PrivateRoute>
+            </AdminRoute>
           }
         />
         <Route
           path="/admin/products"
           element={
-            <PrivateRoute>
+            <AdminRoute>
               <ManageProducts />
-            </PrivateRoute>
+            </AdminRoute>
           }
         />
         <Route
           path="/admin/users"
           element={
-            <PrivateRoute>
+            <AdminRoute>
               <ManageUser />
-            </PrivateRoute>
+            </AdminRoute>
           }
         />
         <Route
           path="/admin/orders"
           element={
-            <PrivateRoute>
+            <AdminRoute>
               <ManageOrders />
-            </PrivateRoute>
+            </AdminRoute>
           }
         />
         <Route
           path="/admin/settings"
           element={
-            <PrivateRoute>
+            <AdminRoute>
               <Settings />
-            </PrivateRoute>
+            </AdminRoute>
           }
         />
       </Routes>
@@ -172,6 +177,7 @@ function AppLayout() {
   );
 }
 
+// Mount the root app
 const root = createRoot(document.getElementById("root"));
 root.render(
   <BrowserRouter>
