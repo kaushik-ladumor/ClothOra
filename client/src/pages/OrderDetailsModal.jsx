@@ -103,12 +103,12 @@ function OrderDetailsModal({ order, onClose }) {
 
     return null;
   };
-
+  const API_URL = import.meta.env.VITE_API_KEY;
   const getImageUrl = (image) => {
     if (!image) return createPlaceholderImage();
     if (image.startsWith("http")) return image;
     if (image.startsWith("data:image")) return image;
-    return `http://localhost:8080/${image}`;
+    return `${API_URL}${image}`;
   };
 
   const customerInfo = getCustomerInfo();

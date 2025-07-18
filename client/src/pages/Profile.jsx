@@ -16,7 +16,8 @@ function Profile() {
     }
 
     setIsLoading(true);
-    fetch("http://localhost:8080/profile", {
+    const API_URL = import.meta.env.VITE_API_KEY
+    fetch(`${API_URL}/profile`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

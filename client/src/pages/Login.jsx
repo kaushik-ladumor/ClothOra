@@ -41,7 +41,8 @@ function Login() {
 
     setIsLoading(true);
     try {
-      const response = await fetch("http://localhost:8080/auth/login", {
+      const API_URL = import.meta.env.VITE_API_KEY;
+      const response = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),

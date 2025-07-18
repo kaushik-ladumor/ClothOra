@@ -37,7 +37,8 @@ function UpdatePassword() {
     try {
       const token = localStorage.getItem("token");
 
-      const response = await fetch("http://localhost:8080/profile/update-password", {
+      const API_URL = import.meta.env.VITE_API_KEY;
+      const response = await fetch(`${API_URL}/profile/update-password`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

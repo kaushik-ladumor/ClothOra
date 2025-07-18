@@ -18,8 +18,8 @@ function MyOrders() {
           navigate("/login");
           return;
         }
-
-        const response = await fetch("http://localhost:8080/order/all", {
+        const API_URL = import.meta.env.VITE_API_KEY;
+        const response = await fetch(`${API_URL}/order/all`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -58,11 +58,12 @@ function MyOrders() {
       : "Unknown";
   };
 
+  const API_URL = import.meta.env.VITE_API_KEY;
   const getImageUrl = (image) => {
     if (!image) return "https://via.placeholder.com/150";
     if (image.startsWith("http")) return image;
     if (image.startsWith("data:image")) return image;
-    return `http://localhost:8080/${image}`;
+    return `h${API_URL}/${image}`;
   };
 
   const getCustomerEmail = (order) => {

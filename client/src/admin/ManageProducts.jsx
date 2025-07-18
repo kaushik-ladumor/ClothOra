@@ -24,7 +24,8 @@ function ManageProducts() {
 
   const fetchProducts = () => {
     setIsLoading(true);
-    fetch("http://localhost:8080/admin/product")
+    const API_URL = import.meta.env.VITE_API_KEY;
+    fetch(`${API_URL}/admin/product`)
       .then((res) => res.json())
       .then((data) => {
         setProducts(data);
@@ -34,7 +35,7 @@ function ManageProducts() {
       .catch((err) => {
         console.error("Failed to fetch products:", err);
         setIsLoading(false);
-        showNotification('Failed to load products', 'error');
+        showNotification("Failed to load products", "error");
       });
   };
 

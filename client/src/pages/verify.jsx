@@ -42,7 +42,8 @@ function Verify() {
     const loadingToast = toast.loading("Verifying your code...");
 
     try {
-      const res = await fetch("http://localhost:8080/auth/verifyEmail", {
+      const API_URL = import.meta.env.VITE_API_KEY;
+      const res = await fetch(`${API_URL}/auth/verifyEmail`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ verificationCode: code }),

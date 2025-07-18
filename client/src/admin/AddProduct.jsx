@@ -341,7 +341,8 @@ const AddProduct = () => {
       });
 
       // Submit to API
-      const response = await fetch("http://localhost:8080/admin/addproduct", {
+      const API_URL = import.meta.env.VITE_API_KEY;
+      const response = await fetch(`${API_URL}/admin/addproduct`, {
         method: "POST",
         body: submitData,
       });

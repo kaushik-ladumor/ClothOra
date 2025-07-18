@@ -12,7 +12,8 @@ function Products() {
 
   useEffect(() => {
     setIsLoading(true);
-    fetch("http://localhost:8080/product")
+    const API_URL = import.meta.env.VITE_API_KEY;
+    fetch(`${API_URL}/product`)
       .then((res) => res.json())
       .then((products) => {
         setData(products);

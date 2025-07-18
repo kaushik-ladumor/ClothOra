@@ -28,7 +28,8 @@ function Checkout() {
       if (!token) return;
       
       try {
-        const response = await fetch("http://localhost:8080/profile", {
+        const API_URL = import.meta.env.VITE_API_KEY;
+        const response = await fetch(`${API_URL}/profile`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -141,7 +142,7 @@ function Checkout() {
     if (!token) return;
     
     try {
-      await fetch("http://localhost:8080/cart/clear", {
+      await fetch(`${API_URL}/cart/clear`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -229,7 +230,7 @@ function Checkout() {
         phoneNumber: customerInfo.phone.trim(), // This will be saved in order schema
       };
 
-      const orderResponse = await fetch("http://localhost:8080/order", {
+      const orderResponse = await fetch(`${API_URL}/order`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -251,7 +252,7 @@ function Checkout() {
       }
 
       if (paymentMethod === "Online") {
-        const paymentRes = await fetch("http://localhost:8080/order/pay", {
+        const paymentRes = await fetch(`${API_URL}/order/pay`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -286,7 +287,7 @@ function Checkout() {
           order_id: paymentData.order_id,
           handler: async function (response) {
             try {
-              await fetch("http://localhost:8080/order/update-payment", {
+              await fetch(`${API_URL}/order/update-payment`, {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",

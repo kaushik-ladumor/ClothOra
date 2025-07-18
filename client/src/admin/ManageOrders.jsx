@@ -20,12 +20,12 @@ function ManageOrders() {
         setError('No authentication token found');
         return;
       }
-
-      const response = await fetch('http://localhost:8080/admin/order', {
+      const API_URL = import.meta.env.VITE_API_KEY;
+      const response = await fetch(`${API_URL}/admin/order`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
       });
 
       if (!response.ok) {

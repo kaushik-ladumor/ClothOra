@@ -13,7 +13,8 @@ export default function Cart() {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch("http://localhost:8080/cart", {
+      const API_URL = import.meta.env.VITE_API_KEY;
+      const res = await fetch(`${API_URL}/cart`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       
@@ -40,16 +41,16 @@ export default function Cart() {
       const newQuantity = currentItem.quantity + delta;
       if (newQuantity < 1) return;
 
-      const response = await fetch("http://localhost:8080/cart/add", {
+      const response = await fetch(`${API_URL}/cart/add`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ 
-          productId, 
+        body: JSON.stringify({
+          productId,
           quantity: delta,
-          price: currentItem.price || currentItem.productId.price
+          price: currentItem.price || currentItem.productId.price,
         }),
       });
 
@@ -66,7 +67,7 @@ export default function Cart() {
 
   const removeItem = async (productId) => {
     try {
-      const response = await fetch(`http://localhost:8080/cart/remove/${productId}`, {
+      const response = await fetch(`${API_URL}/cart/remove/${productId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -88,7 +89,7 @@ export default function Cart() {
     }
 
     try {
-      const response = await fetch("http://localhost:8080/cart/clear", {
+      const response = await fetch(`${API_URL}/cart/clear`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });

@@ -67,7 +67,8 @@ function Register() {
     const loadingToast = toast.loading("Creating your account...");
 
     try {
-      const response = await fetch("http://localhost:8080/auth/signup", {
+      const API_URL = import.meta.env.VITE_API_KEY;
+      const response = await fetch(`${API_URL}/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),

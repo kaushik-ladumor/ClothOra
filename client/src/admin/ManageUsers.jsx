@@ -43,7 +43,8 @@ function ManageUsers() {
       setIsDeleting(true);
       setDeleteId(userId);
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:8080/admin/user/${userId}`, {
+      const API_URL = import.meta.env.VITE_API_KEY;
+      const res = await fetch(`${API_URL}/admin/user/${userId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
