@@ -20,9 +20,9 @@ function AdminDashboard() {
         setIsLoading(true);
         const API_URL = import.meta.env.VITE_API_KEY;
         const [productsRes, usersRes, ordersRes] = await Promise.all([
-          fetch(`${API_URL}/admin/product/count`),
-          fetch(`${API_URL}/admin/user/count`),
-          fetch(`${API_URL}/admin/order/count`),
+          fetch(`${API_URL}admin/product/count`),
+          fetch(`${API_URL}admin/user/count`),
+          fetch(`${API_URL}admin/order/count`),
         ]);
 
         const productsData = await productsRes.json();

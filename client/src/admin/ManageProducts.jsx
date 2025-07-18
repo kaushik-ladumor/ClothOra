@@ -25,7 +25,7 @@ function ManageProducts() {
   const fetchProducts = () => {
     setIsLoading(true);
     const API_URL = import.meta.env.VITE_API_KEY;
-    fetch(`${API_URL}/admin/product`)
+    fetch(`${API_URL}admin/product`)
       .then((res) => res.json())
       .then((data) => {
         setProducts(data);

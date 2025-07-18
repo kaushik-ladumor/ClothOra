@@ -13,7 +13,7 @@ function Products() {
   useEffect(() => {
     setIsLoading(true);
     const API_URL = import.meta.env.VITE_API_KEY;
-    fetch(`${API_URL}/product`)
+    fetch(`${API_URL}product`)
       .then((res) => res.json())
       .then((products) => {
         setData(products);

@@ -22,7 +22,8 @@ function ManageUsers() {
 
   const fetchUsers = () => {
     setIsLoading(true);
-    fetch("http://localhost:8080/admin/user")
+    const API_URL = import.meta.env.VITE_API_KEY;
+    fetch(`${API_URL}admin/user`)
       .then((res) => res.json())
       .then((data) => {
         setUsers(data);
@@ -31,7 +32,7 @@ function ManageUsers() {
       .catch((err) => {
         console.error("Failed to fetch users:", err);
         setIsLoading(false);
-        showNotification('Failed to load users', 'error');
+        showNotification("Failed to load users", "error");
       });
   };
 
@@ -44,7 +45,7 @@ function ManageUsers() {
       setDeleteId(userId);
       const token = localStorage.getItem("token");
       const API_URL = import.meta.env.VITE_API_KEY;
-      const res = await fetch(`${API_URL}/admin/user/${userId}`, {
+      const res = await fetch(`${API_URL}admin/user/${userId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,

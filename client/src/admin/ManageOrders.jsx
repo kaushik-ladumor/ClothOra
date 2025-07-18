@@ -50,16 +50,16 @@ function ManageOrders() {
       if (!token) {
         throw new Error('No authentication token found');
       }
-
-      const response = await fetch(`http://localhost:8080/admin/order/${orderId}/status`, {
-        method: 'PUT',
+      const API_URL = import.meta.env.VITE_API_KEY;
+      const response = await fetch(`${API_URL}admin/order/${orderId}/status`, {
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ 
-          deliveryStatus: newStatus 
-        })
+        body: JSON.stringify({
+          deliveryStatus: newStatus,
+        }),
       });
 
       if (!response.ok) {

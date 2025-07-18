@@ -28,7 +28,7 @@ function ProductDetails() {
       try {
         setLoading(true);
         const API_URL = import.meta.env.VITE_API_KEY;
-        const response = await fetch(`${API_URL}/product/${id}`);
+        const response = await fetch(`${API_URL}product/${id}`);
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);

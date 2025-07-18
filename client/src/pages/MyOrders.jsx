@@ -19,7 +19,7 @@ function MyOrders() {
           return;
         }
         const API_URL = import.meta.env.VITE_API_KEY;
-        const response = await fetch(`${API_URL}/order/all`, {
+        const response = await fetch(`${API_URL}order/all`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -63,7 +63,7 @@ function MyOrders() {
     if (!image) return "https://via.placeholder.com/150";
     if (image.startsWith("http")) return image;
     if (image.startsWith("data:image")) return image;
-    return `h${API_URL}/${image}`;
+    return `h${API_URL}${image}`;
   };
 
   const getCustomerEmail = (order) => {

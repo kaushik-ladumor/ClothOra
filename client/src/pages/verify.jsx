@@ -43,7 +43,7 @@ function Verify() {
 
     try {
       const API_URL = import.meta.env.VITE_API_KEY;
-      const res = await fetch(`${API_URL}/auth/verifyEmail`, {
+      const res = await fetch(`${API_URL}auth/verifyEmail`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ verificationCode: code }),
