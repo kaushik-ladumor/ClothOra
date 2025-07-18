@@ -28,7 +28,7 @@ app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 app.use(cors({
   origin: [
     'http://localhost:5173',
-    'https://cloth-ora-l6i8.vercel.app'
+    'https://cloth-ora-xfd7.vercel.app/'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
