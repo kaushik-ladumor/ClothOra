@@ -25,7 +25,10 @@ app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // Enable CORS for frontend access
 app.use(cors({
-  origin: 'http://localhost:5173', // React frontend
+  origin: [
+    'http://localhost:5173', // React frontend
+    'https://cloth-ora-l6i8.vercel.app'
+  ],
   credentials: true
 }));
 
@@ -47,7 +50,7 @@ app.use('/auth', authRoutes);
 app.use('/profile', userRoutes);
 app.use('/cart', cartRoutes);
 app.use('/order', orderRoutes);
-app.use('/admin', adminRoutes)
+app.use('/admin', adminRoutes);
 
 // Start server
 app.listen(port, () => {
