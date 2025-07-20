@@ -97,7 +97,7 @@ function ProductDetails() {
     try {
       setLoading(true);
       const API_URL = import.meta.env.VITE_API_KEY;
-      const response = await fetch(`${API_URL}/cart/add`, {
+      const response = await fetch(`${API_URL}cart/add`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
