@@ -21,7 +21,7 @@ function ManageOrders() {
         return;
       }
       const API_URL = import.meta.env.VITE_API_KEY;
-      const response = await fetch(`${API_URL}/admin/order`, {
+      const response = await fetch(`${API_URL}admin/order`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
