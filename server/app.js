@@ -27,7 +27,10 @@ app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 // CORS
 const allowedOrigins = [
   'http://localhost:5173',
-  'https://cloth-ora-app.vercel.app'
+  'https://cloth-ora-app.vercel.app',
+  'https://cloth-ora-app-git-main-kaushik-ladumors-projects.vercel.app',
+  'https://cloth-ora-971q1ps8t-kaushik-ladumors-projects.vercel.app'
+
 ];
 
 const corsOptions = {
